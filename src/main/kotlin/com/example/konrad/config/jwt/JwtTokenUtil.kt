@@ -1,4 +1,4 @@
-package com.example.konrad.jwt_config
+package com.example.konrad.config.jwt
 
 import com.example.konrad.entity.UserDetailsEntity
 import io.jsonwebtoken.Claims
@@ -19,7 +19,11 @@ class JwtTokenUtil : Serializable {
 
     //retrieve username from jwt token
     fun getUsernameFromToken(token: String?): String {
-        return getClaimFromToken(token) { obj: Claims -> obj.subject }
+        var jwtToken = token
+        if(jwtToken != null && jwtToken.startsWith("Bearer")) {
+            jwtToken = jwtToken.substring(7)
+        }
+        return getClaimFromToken(jwtToken) { obj: Claims -> obj.subject }
     }
 
     //retrieve expiration date from jwt token
@@ -68,6 +72,6 @@ class JwtTokenUtil : Serializable {
 
     companion object {
         private const val serialVersionUID = -2550185165626007488L
-        const val JWT_TOKEN_VALIDITY = (5 * 60 * 60).toLong()
+        const val JWT_TOKEN_VALIDITY = (24 * 60 * 60 * 300).toLong()
     }
 }

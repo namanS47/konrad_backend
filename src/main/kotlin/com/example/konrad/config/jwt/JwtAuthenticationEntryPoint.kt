@@ -1,4 +1,4 @@
-package com.example.konrad.jwt_config
+package com.example.konrad.config.jwt
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

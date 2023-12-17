@@ -27,15 +27,17 @@ class JwtUserDetailsService(
         return if (response.isPresent) {
             val userDetailsEntity = response.get()
             User(userDetailsEntity.username, userDetailsEntity.password,
-                    getAuthority())
+                    getAuthority(userDetailsEntity.roles))
         } else {
             throw UsernameNotFoundException("User not found with username: $username")
         }
     }
 
-    private fun getAuthority(): Set<SimpleGrantedAuthority> {
+    private fun getAuthority(roles: List<String>?): Set<SimpleGrantedAuthority> {
         val authorities: MutableSet<SimpleGrantedAuthority> = HashSet()
-        authorities.add(SimpleGrantedAuthority("ROLE_ADMIN"))
+        roles?.forEach {
+            authorities.add(SimpleGrantedAuthority(it))
+        }
         return authorities
     }
 
@@ -57,7 +59,7 @@ class JwtUserDetailsService(
             userDetailsRepository.save(userDetailsEntity)
             ResponseEntity.ok().body(ResponseModel(success = true, body = null))
         } else {
-            ResponseEntity.ok().body(ResponseModel(success = false, reason = "user already exist", body = null))
+            ResponseEntity.ok().body(ResponseModel(success = false, reason = "username already exist", body = null))
         }
     }
 }

@@ -9,9 +9,11 @@ import org.springframework.data.mongodb.core.mapping.Field
 class DoctorDataEntity(
         @Field("doctor_id")
         var userId: String? = null,
+        var username: String? = null,
         var name: String? = null,
         var age: Int? = null,
         var gender: String? = null,
+        var languages: List<String>? = null,
         @Field("contact_number")
         var contactNumber: String? = null,
         var email: String? = null,

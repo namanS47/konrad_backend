@@ -1,4 +1,4 @@
-package com.example.konrad.jwt_config
+package com.example.konrad.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

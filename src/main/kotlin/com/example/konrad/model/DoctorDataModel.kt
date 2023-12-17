@@ -4,9 +4,12 @@ import com.example.konrad.entity.DoctorDataEntity
 
 data class DoctorDataModel(
         var userId: String? = null,
+        var username: String? = null,
         var name: String? = null,
+        var password: String? = null,
         var age: Int? = null,
         var gender: String? = null,
+        var languages: List<String>? = null,
         var contactNumber: String? = null,
         var email: String? = null,
         var expertise: String? = null,
@@ -18,7 +21,7 @@ data class DoctorDataModel(
         var associatedSPId: String? = null,
 )
 
-object DoctorDataConvertor {
+object DoctorDataObject {
     fun toEntity(doctorDataModel: DoctorDataModel): DoctorDataEntity {
         val entity = DoctorDataEntity()
         entity.apply { 
@@ -57,5 +60,25 @@ object DoctorDataConvertor {
             associatedSPId = doctorDataEntity.associatedSPId
         }
         return model
+    }
+
+    fun isDoctorValid(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
+        if(doctorDataModel.name.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "name can not be empty", body = null)
+        }
+        if(doctorDataModel.username.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "username can not be empty", body = null)
+        }
+        if(doctorDataModel.password.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "password can not be empty", body = null)
+        }
+
+        return ResponseModel(success = true, body = null)
+
+
+//        return !doctorDataModel.name.isNullOrEmpty() && !doctorDataModel.username.isNullOrEmpty() &&
+//                !doctorDataModel.password.isNullOrEmpty() && !doctorDataModel.associatedSPId.isNullOrEmpty() &&
+//                !doctorDataModel.contactNumber.isNullOrEmpty() && !doctorDataModel.gender.isNullOrEmpty() &&
+//                !doctorDataModel.languages.isNullOrEmpty()
     }
 }

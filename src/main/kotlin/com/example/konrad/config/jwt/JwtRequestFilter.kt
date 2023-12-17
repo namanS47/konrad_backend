@@ -1,4 +1,4 @@
-package com.example.konrad.jwt_config
+package com.example.konrad.config.jwt
 
 import com.example.konrad.services.jwtService.JwtUserDetailsService
 import io.jsonwebtoken.ExpiredJwtException

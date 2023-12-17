@@ -1,6 +1,6 @@
 package com.example.konrad.services.jwtService
 
-import com.example.konrad.jwt_config.JwtTokenUtil
+import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.model.jwt_models.JwtResponse
 import com.example.konrad.model.ResponseModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
