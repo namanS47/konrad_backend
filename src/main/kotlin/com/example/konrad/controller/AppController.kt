@@ -5,6 +5,7 @@ import com.example.konrad.model.ServiceProviderDataModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.AggregatorService
 import com.example.konrad.services.DistanceMatrixServices
+import com.example.konrad.services.DoctorService
 import com.example.konrad.services.jwtService.JwtUserDetailsService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
@@ -16,7 +17,8 @@ import org.springframework.web.bind.annotation.*
 class AppController(
         @Autowired val distanceMatrixServices: DistanceMatrixServices,
         @Autowired val jwtUserDetailsService: JwtUserDetailsService,
-        @Autowired val aggregatorService: AggregatorService
+        @Autowired val aggregatorService: AggregatorService,
+        @Autowired val doctorService: DoctorService
 ) {
     @GetMapping("/")
     fun runDistanceMatrix() {
@@ -35,15 +37,9 @@ class AppController(
         return aggregatorService.addServiceProvider(serviceProviderDataModel)
     }
 
-    @RolesAllowed("ADMIN", "SERVICE_PROVIDER")
-    @GetMapping("/aggregator")
-    fun fetchServiceProviderDetails(@RequestHeader (name="Authorization") token: String): ResponseEntity<*> {
-        return aggregatorService.getServiceProviderDetailsByToken(token)
-    }
-
-    @RolesAllowed("SERVICE_PROVIDER")
-    @PostMapping("/aggregator/doctor")
-    fun addDoctor(@RequestHeader (name="Authorization") spToken: String, @RequestBody doctorDataModel: DoctorDataModel): ResponseEntity<*> {
-        return aggregatorService.createDoctor(doctorDataModel, spToken)
+    @RolesAllowed("DOCTOR")
+    @GetMapping("/doctor")
+    fun fetchDoctorDetailsByToken(@RequestHeader(name="Authorization") doctorToken: String): ResponseEntity<*> {
+        return doctorService.getDoctorDetails(doctorToken)
     }
 }

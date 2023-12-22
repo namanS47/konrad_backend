@@ -60,7 +60,7 @@ class AggregatorService(
         val response = getServiceProviderDetailsByUsername(username)
 
         return if(response.success == true) {
-            ResponseEntity.ok(ResponseModel(success = true, body = response))
+            ResponseEntity.ok(response)
         } else {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
         }

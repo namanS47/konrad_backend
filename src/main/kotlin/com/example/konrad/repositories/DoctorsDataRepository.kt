@@ -6,4 +6,5 @@ import java.util.Optional
 
 interface DoctorsDataRepository: MongoRepository<DoctorDataEntity, String> {
     fun findByUserId(userId: String): Optional<DoctorDataEntity>
+    fun findByUsername(username: String): Optional<DoctorDataEntity>
 }

@@ -29,7 +29,8 @@ class AuthenticationService(
             )
             val userDetails = userDetailsService.getUserByUserName(authenticationRequest.username!!)
             val token = jwtTokenUtil.generateToken(userDetails, userDetails.roles?.get(0) ?: "")
-            ResponseEntity.ok<Any>(ResponseModel(success = true, body = JwtResponse(token)))
+            val userRole = userDetails.roles?.get(0)?.substring(5)
+            ResponseEntity.ok<Any>(ResponseModel(success = true, body = JwtResponse(token, userRole)))
         } catch (e: DisabledException) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false, reason = "User is disabled", body = null))
         } catch (e: BadCredentialsException) {

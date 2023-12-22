@@ -1,7 +1,12 @@
 package com.example.konrad.model
 
 import com.example.konrad.entity.DoctorDataEntity
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class DoctorDataModel(
         var userId: String? = null,
         var username: String? = null,
@@ -26,6 +31,7 @@ object DoctorDataObject {
         val entity = DoctorDataEntity()
         entity.apply { 
             userId = doctorDataModel.userId
+            username = doctorDataModel.username
             name = doctorDataModel.name
             age = doctorDataModel.age
             gender = doctorDataModel.gender
@@ -46,6 +52,7 @@ object DoctorDataObject {
         val model = DoctorDataModel()
         model.apply {
             userId = doctorDataEntity.userId
+            username = doctorDataEntity.username
             name = doctorDataEntity.name
             age = doctorDataEntity.age
             gender = doctorDataEntity.gender
