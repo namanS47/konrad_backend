@@ -7,10 +7,9 @@ import com.example.konrad.model.jwt_models.UserDetailsConvertor
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.model.jwt_models.UserRoles
 import com.example.konrad.repositories.DoctorsDataRepository
+import com.example.konrad.repositories.DriverDataRepository
 import com.example.konrad.repositories.ServiceProviderRepository
 import com.example.konrad.repositories.UserDetailsRepository
-import com.example.konrad.services.jwtService.JwtUserDetailsService
-import io.opencensus.internal.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,8 +20,8 @@ import java.lang.Exception
 @Service
 class AggregatorService(
         @Autowired private val doctorsDataRepository: DoctorsDataRepository,
+        @Autowired private val driverDataRepository: DriverDataRepository,
         @Autowired private val serviceProviderRepository: ServiceProviderRepository,
-        @Autowired private val userDetailsService: JwtUserDetailsService,
         @Autowired private val userDetailsRepository: UserDetailsRepository,
         @Autowired private val passwordEncoder: PasswordEncoder,
         @Autowired private val jwtTokenUtil: JwtTokenUtil
@@ -138,6 +137,48 @@ class AggregatorService(
         val associatedDoctorsList = doctorsDataRepository.findAllByAssociatedSPId(spUsername)
         return ResponseEntity.ok(ResponseModel(success = true, body = associatedDoctorsList.map {
             DoctorDataObject.toModel(it)
+        }))
+    }
+
+
+    fun createDriverWithCredentials(driverDataModel: DriverDataModel, spToken: String): ResponseEntity<*> {
+        val isDriverValidResponse = DriverDataObject.isDriverDetailsValidWithCredentials(driverDataModel)
+
+        if(isDriverValidResponse.success != true) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(isDriverValidResponse)
+        }
+
+        val response = driverDataModel.username?.let { userDetailsRepository.findByUsername(it) }
+        if(response?.isPresent == true) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, reason = "username already exist", body = null))
+        }
+
+        val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
+        driverDataModel.associatedSPId = spUsername
+
+        try {
+            val userDetailsModel = UserDetailsModel()
+            userDetailsModel.apply {
+                name = driverDataModel.name
+                username = driverDataModel.username
+                password = passwordEncoder.encode(driverDataModel.password)
+                enabled = true
+                roles = listOf(UserRoles.DRIVER)
+            }
+            userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
+
+            driverDataRepository.save(DriverDataObject.toEntity(driverDataModel))
+            return ResponseEntity.ok().body(ResponseModel(success = true, body = null))
+        } catch (e: Exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, reason = "Something went wrong", body = null))
+        }
+    }
+
+    fun getAllDriversAssociatedWithSP(spToken: String): ResponseEntity<*> {
+        val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
+        val associatedDriversList = driverDataRepository.findAllByAssociatedSPId(spUsername)
+        return ResponseEntity.ok(ResponseModel(success = true, body = associatedDriversList.map {
+            DriverDataObject.toModel(it)
         }))
     }
 }

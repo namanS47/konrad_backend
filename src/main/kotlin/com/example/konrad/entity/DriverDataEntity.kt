@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.Field
 
 @Document(collection = "driver_details")
 class DriverDataEntity (
-        var userId: String? = null,
         var username: String? = null,
         var name: String? = null,
         var password: String? = null,

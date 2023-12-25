@@ -1,6 +1,7 @@
 package com.example.konrad.controller
 
 import com.example.konrad.model.DoctorDataModel
+import com.example.konrad.model.DriverDataModel
 import com.example.konrad.services.AggregatorService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,5 +29,17 @@ class AggregatorController(
     @GetMapping("/doctors")
     fun getAllDoctorsAssociatedWithSP(@RequestHeader(name="Authorization") spToken: String): ResponseEntity<*> {
         return aggregatorService.getAllDoctorsAssociatedWithSP(spToken)
+    }
+
+    @RolesAllowed("SERVICE_PROVIDER")
+    @PostMapping("/driver")
+    fun addDriver(@RequestHeader(name="Authorization") spToken: String, @RequestBody driverDataModel: DriverDataModel): ResponseEntity<*> {
+        return aggregatorService.createDriverWithCredentials(driverDataModel, spToken)
+    }
+
+    @RolesAllowed("SERVICE_PROVIDER")
+    @GetMapping("/drivers")
+    fun getAllDriversAssociatedWithSP(@RequestHeader(name="Authorization") spToken: String): ResponseEntity<*> {
+        return aggregatorService.getAllDriversAssociatedWithSP(spToken)
     }
 }
