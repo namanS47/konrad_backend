@@ -10,6 +10,7 @@ import com.example.konrad.repositories.DoctorsDataRepository
 import com.example.konrad.repositories.ServiceProviderRepository
 import com.example.konrad.repositories.UserDetailsRepository
 import com.example.konrad.services.jwtService.JwtUserDetailsService
+import io.opencensus.internal.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -75,8 +76,8 @@ class AggregatorService(
         }
     }
 
-    fun createDoctor(doctorDataModel: DoctorDataModel, spToken: String): ResponseEntity<*> {
-        val isDoctorValidResponse = DoctorDataObject.isDoctorValid(doctorDataModel)
+    fun createDoctorWithCredentials(doctorDataModel: DoctorDataModel, spToken: String): ResponseEntity<*> {
+        val isDoctorValidResponse = DoctorDataObject.isDoctorDetailsValidWithCredentials(doctorDataModel)
 
         if(isDoctorValidResponse.success != true) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(isDoctorValidResponse)
@@ -106,5 +107,37 @@ class AggregatorService(
         } catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, reason = "Something went wrong", body = null))
         }
+    }
+
+    fun createDoctorWithoutCredentials(doctorDataModel: DoctorDataModel, spToken: String): ResponseEntity<*> {
+        val isDoctorValidResponse = DoctorDataObject.isDoctorDetailsValidWithoutCredentials(doctorDataModel)
+
+        if(isDoctorValidResponse.success != true) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(isDoctorValidResponse)
+        }
+
+        //If user tries to create doctor by sending userId
+        val response = doctorDataModel.username?.let { userDetailsRepository.findByUsername(it) }
+        if(response?.isPresent == true) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, reason = "username already exist", body = null))
+        }
+
+        val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
+        doctorDataModel.associatedSPId = spUsername
+
+        return try {
+            doctorsDataRepository.save(DoctorDataObject.toEntity(doctorDataModel))
+            ResponseEntity.ok().body(ResponseModel(success = true, body = null))
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, reason = "Something went wrong", body = null))
+        }
+    }
+
+    fun getAllDoctorsAssociatedWithSP(spToken: String): ResponseEntity<*> {
+        val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
+        val associatedDoctorsList = doctorsDataRepository.findAllByAssociatedSPId(spUsername)
+        return ResponseEntity.ok(ResponseModel(success = true, body = associatedDoctorsList.map {
+            DoctorDataObject.toModel(it)
+        }))
     }
 }

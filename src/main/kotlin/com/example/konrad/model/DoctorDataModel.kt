@@ -29,8 +29,7 @@ data class DoctorDataModel(
 object DoctorDataObject {
     fun toEntity(doctorDataModel: DoctorDataModel): DoctorDataEntity {
         val entity = DoctorDataEntity()
-        entity.apply { 
-            userId = doctorDataModel.userId
+        entity.apply {
             username = doctorDataModel.username
             name = doctorDataModel.name
             age = doctorDataModel.age
@@ -51,7 +50,7 @@ object DoctorDataObject {
     fun toModel(doctorDataEntity: DoctorDataEntity): DoctorDataModel {
         val model = DoctorDataModel()
         model.apply {
-            userId = doctorDataEntity.userId
+            userId = doctorDataEntity.id
             username = doctorDataEntity.username
             name = doctorDataEntity.name
             age = doctorDataEntity.age
@@ -69,7 +68,7 @@ object DoctorDataObject {
         return model
     }
 
-    fun isDoctorValid(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
+    fun isDoctorDetailsValidWithCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
         if(doctorDataModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty", body = null)
         }
@@ -79,6 +78,15 @@ object DoctorDataObject {
         if(doctorDataModel.password.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "password can not be empty", body = null)
         }
+        if(doctorDataModel.contactNumber.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "contact number can not be empty", body = null)
+        }
+        if(doctorDataModel.age == null) {
+            return ResponseModel(success = false, reason = "age can not be empty", body = null)
+        }
+        if(doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "profile can not be empty", body = null)
+        }
 
         return ResponseModel(success = true, body = null)
 
@@ -87,5 +95,22 @@ object DoctorDataObject {
 //                !doctorDataModel.password.isNullOrEmpty() && !doctorDataModel.associatedSPId.isNullOrEmpty() &&
 //                !doctorDataModel.contactNumber.isNullOrEmpty() && !doctorDataModel.gender.isNullOrEmpty() &&
 //                !doctorDataModel.languages.isNullOrEmpty()
+    }
+
+    fun isDoctorDetailsValidWithoutCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
+        if(doctorDataModel.name.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "name can not be empty", body = null)
+        }
+        if(doctorDataModel.contactNumber.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "contact number can not be empty", body = null)
+        }
+        if(doctorDataModel.age == null) {
+            return ResponseModel(success = false, reason = "age can not be empty", body = null)
+        }
+        if(doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "profile picture can not be empty", body = null)
+        }
+
+        return ResponseModel(success = true, body = null)
     }
 }

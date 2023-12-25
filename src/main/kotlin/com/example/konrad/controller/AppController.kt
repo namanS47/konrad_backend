@@ -42,4 +42,9 @@ class AppController(
     fun fetchDoctorDetailsByToken(@RequestHeader(name="Authorization") doctorToken: String): ResponseEntity<*> {
         return doctorService.getDoctorDetails(doctorToken)
     }
+
+    @GetMapping("/doctor/id")
+    fun fetchDoctorDetailsById(@RequestHeader doctorId: String): ResponseEntity<*> {
+        return ResponseEntity.ok(doctorService.getDoctorDetailsByUserId(doctorId))
+    }
 }

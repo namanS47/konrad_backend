@@ -21,6 +21,12 @@ class AggregatorController(
     @RolesAllowed("SERVICE_PROVIDER")
     @PostMapping("/doctor")
     fun addDoctor(@RequestHeader(name="Authorization") spToken: String, @RequestBody doctorDataModel: DoctorDataModel): ResponseEntity<*> {
-        return aggregatorService.createDoctor(doctorDataModel, spToken)
+        return aggregatorService.createDoctorWithoutCredentials(doctorDataModel, spToken)
+    }
+
+    @RolesAllowed("SERVICE_PROVIDER")
+    @GetMapping("/doctors")
+    fun getAllDoctorsAssociatedWithSP(@RequestHeader(name="Authorization") spToken: String): ResponseEntity<*> {
+        return aggregatorService.getAllDoctorsAssociatedWithSP(spToken)
     }
 }

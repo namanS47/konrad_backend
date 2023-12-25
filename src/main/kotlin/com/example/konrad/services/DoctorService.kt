@@ -35,4 +35,13 @@ class DoctorService(
             ResponseModel(success = false, reason = "username doesn't exist", body = null)
         }
     }
+
+    fun getDoctorDetailsByUserId(userId: String): ResponseModel<DoctorDataModel> {
+        val response = doctorsDataRepository.findById(userId)
+        return if(response.isPresent) {
+            ResponseModel(success = true, body = DoctorDataObject.toModel(response.get()))
+        } else {
+            ResponseModel(success = false, reason = "username doesn't exist", body = null)
+        }
+    }
 }
