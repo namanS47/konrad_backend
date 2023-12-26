@@ -14,6 +14,7 @@ data class UserDetailsModel (
         var password: String? = null,
         var enabled: Boolean? = null,
         var roles: List<String>? = null,
+        var otp: String? = null,
 )
 
 object UserDetailsConvertor {

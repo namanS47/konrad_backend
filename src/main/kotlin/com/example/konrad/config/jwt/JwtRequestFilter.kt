@@ -2,6 +2,7 @@ package com.example.konrad.config.jwt
 
 import com.example.konrad.services.jwtService.JwtUserDetailsService
 import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.SignatureException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
@@ -39,6 +40,8 @@ class JwtRequestFilter : OncePerRequestFilter() {
                 println("Unable to get JWT Token")
             } catch (e: ExpiredJwtException) {
                 println("JWT Token has expired")
+            } catch (e: SignatureException) {
+                println("Invalid JWT Token")
             }
         } else {
             logger.warn("JWT Token does not begin with Bearer String")

@@ -19,4 +19,9 @@ class JwtAuthenticationController(
     fun createAuthenticationToken(@RequestBody authenticationRequest: UserDetailsModel): ResponseEntity<*> {
         return authenticationService.authentication(authenticationRequest)
     }
+
+//    @RequestMapping(value = ["/authenticate/otp"], method = [RequestMethod.POST])
+//    fun createAuthenticationTokenByOtp(@RequestBody authenticationRequest: UserDetailsModel): ResponseEntity<*> {
+//        return authenticationService.authenticationViaOtp(authenticationRequest)
+//    }
 }

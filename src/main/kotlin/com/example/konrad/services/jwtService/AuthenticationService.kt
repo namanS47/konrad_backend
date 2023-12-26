@@ -23,11 +23,26 @@ class AuthenticationService(
         return try {
             authManager.authenticate(
                     UsernamePasswordAuthenticationToken(
-                            authenticationRequest.username,
-                            authenticationRequest.password
+                        authenticationRequest.username,
+                        authenticationRequest.password
                     )
             )
             val userDetails = userDetailsService.getUserByUserName(authenticationRequest.username!!)
+            val token = jwtTokenUtil.generateToken(userDetails, userDetails.roles?.get(0) ?: "")
+            val userRole = userDetails.roles?.get(0)?.substring(5)
+            ResponseEntity.ok<Any>(ResponseModel(success = true, body = JwtResponse(token, userRole)))
+        } catch (e: DisabledException) {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false, reason = "User is disabled", body = null))
+        } catch (e: BadCredentialsException) {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false, reason = "invalid credentials", body = null))
+        }
+    }
+
+    fun authenticationViaOtp(authenticationRequest: UserDetailsModel): ResponseEntity<*> {
+        return try {
+
+            val userDetails = userDetailsService.getUserByUserName(authenticationRequest.username!!)
+
             val token = jwtTokenUtil.generateToken(userDetails, userDetails.roles?.get(0) ?: "")
             val userRole = userDetails.roles?.get(0)?.substring(5)
             ResponseEntity.ok<Any>(ResponseModel(success = true, body = JwtResponse(token, userRole)))
