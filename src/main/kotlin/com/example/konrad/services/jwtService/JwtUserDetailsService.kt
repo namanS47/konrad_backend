@@ -43,12 +43,12 @@ class JwtUserDetailsService(
     }
 
     // This method returns user details without password
-    fun getUserByUserName(username: String): UserDetailsEntity {
+    fun getUserByUserName(username: String): ResponseModel<UserDetailsEntity> {
         val response = userDetailsRepository.findByUsername(username)
         return if(response.isPresent) {
-            response.get()
-        } else {
-            throw UsernameNotFoundException("User not found with username: $username")
+            ResponseModel(success = true, body = response.get())
+        } else{
+            ResponseModel(success = false, reason = "User doesn't exist")
         }
     }
 

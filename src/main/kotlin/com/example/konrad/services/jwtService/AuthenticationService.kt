@@ -28,7 +28,12 @@ class AuthenticationService(
                         authenticationRequest.password
                     )
             )
-            sendAuthToken(authenticationRequest.username!!)
+            val authTokenResponse = fetchAuthToken(authenticationRequest.username!!)
+            if(authTokenResponse.success == true) {
+                ResponseEntity.ok(authTokenResponse)
+            } else {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(authTokenResponse)
+            }
         } catch (e: DisabledException) {
             ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false, reason = "User is disabled", body = null))
         } catch (e: BadCredentialsException) {
@@ -37,7 +42,7 @@ class AuthenticationService(
     }
 
     fun authenticationViaOtp(authenticationRequest: UserDetailsModel): ResponseEntity<*> {
-        return try {
+        try {
             //TODO: verify otp with otp service provider
             val verified = true
 
@@ -46,26 +51,33 @@ class AuthenticationService(
                         reason = "invalid credentials", body = null))
             }
 
-            sendAuthToken(authenticationRequest.username!!)
-        } catch(e: UsernameNotFoundException) {
-
-            val response = userDetailsService.addNewUserAuthenticatedViaOtp(authenticationRequest)
-            if(response.success != true) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
+            val userDetailsResponse = userDetailsService.getUserByUserName(authenticationRequest.username!!)
+            return if(userDetailsResponse.success == true) {
+                val authTokenResponse = fetchAuthToken(authenticationRequest.username!!)
+                ResponseEntity.ok(authTokenResponse)
+            } else {
+                val response = userDetailsService.addNewUserAuthenticatedViaOtp(authenticationRequest)
+                if(response.success == true) {
+                    val authTokenResponse = fetchAuthToken(authenticationRequest.username!!)
+                    ResponseEntity.ok(authTokenResponse)
+                } else {
+                    ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
+                }
             }
-            sendAuthToken(authenticationRequest.username!!)
-
-        } catch (e: DisabledException) {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false, reason = "User is disabled", body = null))
-        } catch (e: BadCredentialsException) {
-            ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false, reason = "invalid credentials", body = null))
+        } catch (e: Exception) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, reason = e.message, body = null))
         }
     }
 
-    fun sendAuthToken(username: String): ResponseEntity<*> {
-        val userDetails = userDetailsService.getUserByUserName(username)
-        val token = jwtTokenUtil.generateToken(userDetails, userDetails.roles?.get(0) ?: "")
-        val userRole = userDetails.roles?.get(0)?.substring(5)
-        return ResponseEntity.ok(ResponseModel(success = true, body = JwtResponse(token, userRole)))
+    fun fetchAuthToken(username: String): ResponseModel<JwtResponse> {
+        val userDetailsResponse = userDetailsService.getUserByUserName(username)
+        return if(userDetailsResponse.success == true) {
+            val userDetails = userDetailsResponse.body!!
+            val token = jwtTokenUtil.generateToken(userDetails, userDetails.roles?.get(0) ?: "")
+            val userRole = userDetails.roles?.get(0)?.substring(5)
+            ResponseModel(success = true, body = JwtResponse(token, userRole))
+        } else {
+            ResponseModel(success = false, reason = userDetailsResponse.reason)
+        }
     }
 }
