@@ -4,6 +4,7 @@ import com.example.konrad.entity.UserDetailsEntity
 import com.example.konrad.model.ResponseModel
 import com.example.konrad.model.jwt_models.UserDetailsConvertor
 import com.example.konrad.model.jwt_models.UserDetailsModel
+import com.example.konrad.model.jwt_models.UserRoles
 import com.example.konrad.repositories.UserDetailsRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -60,6 +61,17 @@ class JwtUserDetailsService(
             ResponseEntity.ok().body(ResponseModel(success = true, body = null))
         } else {
             ResponseEntity.ok().body(ResponseModel(success = false, reason = "username already exist", body = null))
+        }
+    }
+
+    fun addNewUserAuthenticatedViaOtp(userDetailsModel: UserDetailsModel): ResponseModel<Boolean> {
+        return try {
+            userDetailsModel.roles = listOf(UserRoles.CUSTOMER)
+            userDetailsModel.enabled = true
+            userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
+            ResponseModel(success = true)
+        } catch (e: Exception) {
+            ResponseModel(success = false, reason = e.message)
         }
     }
 }
