@@ -1,11 +1,9 @@
 package com.example.konrad.controller
 
+import com.example.konrad.model.AddressDetailsModel
 import com.example.konrad.model.ServiceProviderDataModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
-import com.example.konrad.services.AggregatorService
-import com.example.konrad.services.DistanceMatrixServices
-import com.example.konrad.services.DoctorService
-import com.example.konrad.services.DriverService
+import com.example.konrad.services.*
 import com.example.konrad.services.jwtService.JwtUserDetailsService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,11 +13,12 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/")
 class AppController(
-        @Autowired val distanceMatrixServices: DistanceMatrixServices,
-        @Autowired val jwtUserDetailsService: JwtUserDetailsService,
-        @Autowired val aggregatorService: AggregatorService,
-        @Autowired val doctorService: DoctorService,
-        @Autowired val driverService: DriverService
+        @Autowired private val distanceMatrixServices: DistanceMatrixServices,
+        @Autowired private val jwtUserDetailsService: JwtUserDetailsService,
+        @Autowired private val aggregatorService: AggregatorService,
+        @Autowired private val doctorService: DoctorService,
+        @Autowired private val driverService: DriverService,
+        @Autowired private val addressService: AddressService
 ) {
     @GetMapping("/")
     fun runDistanceMatrix() {
@@ -56,5 +55,23 @@ class AppController(
     @GetMapping("/driver/id")
     fun fetchDriverDetailsById(@RequestHeader driverId: String): ResponseEntity<*> {
         return ResponseEntity.ok(driverService.getDriverDetailsByUserId(driverId))
+    }
+
+    @RolesAllowed("CUSTOMER")
+    @PostMapping("patient/address")
+    fun savePatientAddress(@RequestHeader (name="Authorization") userToken: String,
+                           @RequestBody addressDetailsModel: AddressDetailsModel): ResponseEntity<*> {
+        return addressService.saveAddress(addressDetailsModel, userToken)
+    }
+
+    @GetMapping("patient/address/id")
+    fun getAddressByAddressId(@RequestHeader addressId: String): ResponseEntity<*> {
+        return addressService.getAddressByAddressId(addressId)
+    }
+
+    @RolesAllowed("CUSTOMER")
+    @GetMapping("patient/address")
+    fun getAddressByToken(@RequestHeader (name="Authorization") userToken: String,): ResponseEntity<*> {
+        return addressService.getAllAddressByUserToken(userToken)
     }
 }

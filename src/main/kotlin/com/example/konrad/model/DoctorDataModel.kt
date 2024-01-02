@@ -99,18 +99,18 @@ object DoctorDataObject {
 
     fun isDoctorDetailsValidWithoutCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
         if(doctorDataModel.name.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "name can not be empty", body = null)
+            return ResponseModel(success = false, reason = "name can not be empty")
         }
         if(doctorDataModel.contactNumber.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "contact number can not be empty", body = null)
+            return ResponseModel(success = false, reason = "contact number can not be empty")
         }
         if(doctorDataModel.age == null) {
-            return ResponseModel(success = false, reason = "age can not be empty", body = null)
+            return ResponseModel(success = false, reason = "age can not be empty")
         }
         if(doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "profile picture can not be empty", body = null)
+            return ResponseModel(success = false, reason = "profile picture can not be empty")
         }
 
-        return ResponseModel(success = true, body = null)
+        return ResponseModel(success = true)
     }
 }

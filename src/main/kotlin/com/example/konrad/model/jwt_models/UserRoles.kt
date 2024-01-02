@@ -9,4 +9,5 @@ object UserRoles {
     const val DOCTOR = "ROLE_DOCTOR"
     const val NURSE = "ROLE_NURSE"
     const val DRIVER = "ROLE_DRIVER"
+    const val CUSTOMER = "ROLE_CUSTOMER"
 }
