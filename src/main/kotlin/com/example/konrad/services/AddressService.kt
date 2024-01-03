@@ -47,7 +47,7 @@ class AddressService(
         return if (response.isPresent) {
             ResponseEntity.ok(ResponseModel(success = true, body = AddressDetailsConvertor.toModel(response.get())))
         } else {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null, reason = "No address found with associated user id"))
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null, reason = "No address found with this address id"))
         }
     }
 }

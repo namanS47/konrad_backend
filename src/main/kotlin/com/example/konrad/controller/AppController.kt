@@ -1,6 +1,7 @@
 package com.example.konrad.controller
 
 import com.example.konrad.model.AddressDetailsModel
+import com.example.konrad.model.PatientDetailsModel
 import com.example.konrad.model.ServiceProviderDataModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
@@ -18,7 +19,8 @@ class AppController(
         @Autowired private val aggregatorService: AggregatorService,
         @Autowired private val doctorService: DoctorService,
         @Autowired private val driverService: DriverService,
-        @Autowired private val addressService: AddressService
+        @Autowired private val addressService: AddressService,
+        @Autowired private val userService: UserService
 ) {
     @GetMapping("/")
     fun runDistanceMatrix() {
@@ -71,7 +73,25 @@ class AppController(
 
     @RolesAllowed("CUSTOMER")
     @GetMapping("patient/address")
-    fun getAddressByToken(@RequestHeader (name="Authorization") userToken: String,): ResponseEntity<*> {
+    fun getAddressByToken(@RequestHeader (name="Authorization") userToken: String): ResponseEntity<*> {
         return addressService.getAllAddressByUserToken(userToken)
+    }
+
+    @RolesAllowed("CUSTOMER")
+    @PostMapping("patient")
+    fun addPatient(@RequestHeader (name="Authorization") userToken: String,
+                   @RequestBody patientDetailsModel: PatientDetailsModel): ResponseEntity<*> {
+        return userService.addPatient(patientDetailsModel, userToken)
+    }
+
+    @RolesAllowed("CUSTOMER")
+    @GetMapping("/patient")
+    fun getAllPatientWithToken(@RequestHeader (name="Authorization") userToken: String): ResponseEntity<*> {
+        return userService.getAllPatientList(userToken)
+    }
+
+    @GetMapping("/patient/id")
+    fun getPatientWithId(@RequestHeader id: String): ResponseEntity<*> {
+        return userService.getPatientById(id)
     }
 }

@@ -27,8 +27,13 @@ class JwtUserDetailsService(
         val response = userDetailsRepository.findByUsername(username)
         return if (response.isPresent) {
             val userDetailsEntity = response.get()
-            User(userDetailsEntity.username, userDetailsEntity.password,
-                    getAuthority(userDetailsEntity.roles))
+            if(userDetailsEntity.roles?.get(0) == UserRoles.CUSTOMER) {
+                User(userDetailsEntity.username, "",
+                        getAuthority(userDetailsEntity.roles))
+            } else {
+                User(userDetailsEntity.username, userDetailsEntity.password,
+                        getAuthority(userDetailsEntity.roles))
+            }
         } else {
             throw UsernameNotFoundException("User not found with username: $username")
         }
