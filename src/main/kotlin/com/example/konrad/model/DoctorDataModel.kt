@@ -24,9 +24,12 @@ data class DoctorDataModel(
         var profilePictureUrl: String? = null,
         var active: Boolean? = null,
         var associatedSPId: String? = null,
+        var type: String? = null,
 )
 
 object DoctorDataObject {
+    const val TYPE_DOCTOR = "TYPE_DOCTOR"
+    const val TYPE_NURSE = "TYPE_NURSE"
     fun toEntity(doctorDataModel: DoctorDataModel): DoctorDataEntity {
         val entity = DoctorDataEntity()
         entity.apply {
@@ -34,6 +37,7 @@ object DoctorDataObject {
             name = doctorDataModel.name
             age = doctorDataModel.age
             gender = doctorDataModel.gender
+            languages = doctorDataModel.languages
             contactNumber = doctorDataModel.contactNumber
             email = doctorDataModel.email
             expertise = doctorDataModel.expertise
@@ -43,10 +47,11 @@ object DoctorDataObject {
             profilePictureUrl = doctorDataModel.profilePictureUrl
             active = doctorDataModel.active
             associatedSPId = doctorDataModel.associatedSPId
+            type = doctorDataModel.type
         }
         return entity
     }
-    
+
     fun toModel(doctorDataEntity: DoctorDataEntity): DoctorDataModel {
         val model = DoctorDataModel()
         model.apply {
@@ -55,6 +60,7 @@ object DoctorDataObject {
             name = doctorDataEntity.name
             age = doctorDataEntity.age
             gender = doctorDataEntity.gender
+            languages = doctorDataEntity.languages
             contactNumber = doctorDataEntity.contactNumber
             email = doctorDataEntity.email
             expertise = doctorDataEntity.expertise
@@ -64,53 +70,66 @@ object DoctorDataObject {
             profilePictureUrl = doctorDataEntity.profilePictureUrl
             active = doctorDataEntity.active
             associatedSPId = doctorDataEntity.associatedSPId
+            type = doctorDataEntity.type
         }
         return model
     }
 
     fun isDoctorDetailsValidWithCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
-        if(doctorDataModel.name.isNullOrEmpty()) {
+        if (doctorDataModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty", body = null)
         }
-        if(doctorDataModel.username.isNullOrEmpty()) {
+        if (doctorDataModel.username.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "username can not be empty", body = null)
         }
-        if(doctorDataModel.password.isNullOrEmpty()) {
+        if (doctorDataModel.password.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "password can not be empty", body = null)
         }
-        if(doctorDataModel.contactNumber.isNullOrEmpty()) {
+        if (doctorDataModel.contactNumber.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "contact number can not be empty", body = null)
         }
-        if(doctorDataModel.age == null) {
+        if (doctorDataModel.age == null) {
             return ResponseModel(success = false, reason = "age can not be empty", body = null)
         }
-        if(doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
+        if (doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "profile can not be empty", body = null)
+        }
+        if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
+            return ResponseModel(success = false, reason = "incorrect type")
         }
 
         return ResponseModel(success = true, body = null)
-
-
-//        return !doctorDataModel.name.isNullOrEmpty() && !doctorDataModel.username.isNullOrEmpty() &&
-//                !doctorDataModel.password.isNullOrEmpty() && !doctorDataModel.associatedSPId.isNullOrEmpty() &&
-//                !doctorDataModel.contactNumber.isNullOrEmpty() && !doctorDataModel.gender.isNullOrEmpty() &&
-//                !doctorDataModel.languages.isNullOrEmpty()
     }
 
     fun isDoctorDetailsValidWithoutCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
-        if(doctorDataModel.name.isNullOrEmpty()) {
+        if (doctorDataModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty")
         }
-        if(doctorDataModel.contactNumber.isNullOrEmpty()) {
+        if (doctorDataModel.contactNumber.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "contact number can not be empty")
         }
-        if(doctorDataModel.age == null) {
+        if (doctorDataModel.age == null) {
             return ResponseModel(success = false, reason = "age can not be empty")
         }
-        if(doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
+        if (doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "profile picture can not be empty")
+        }
+        if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
+            return ResponseModel(success = false, reason = "incorrect type! either $TYPE_DOCTOR or $TYPE_NURSE")
+        }
+        if (isDoctorExpertiseValid(doctorDataModel.expertise)) {
+            return ResponseModel(success = false, reason = "incorrect expertise")
         }
 
         return ResponseModel(success = true)
     }
+
+    fun isDoctorExpertiseValid(expertise: String?): Boolean {
+        return expertise == DoctorExpertise.GeneralPhysician.name ||
+                expertise == DoctorExpertise.Pediatrician.name
+    }
+}
+
+enum class DoctorExpertise {
+    Pediatrician, GeneralPhysician
 }

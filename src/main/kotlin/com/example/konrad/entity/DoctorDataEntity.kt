@@ -1,7 +1,6 @@
 package com.example.konrad.entity
 
 import com.example.konrad.model.LatLong
-import com.example.konrad.entity.AppEntity
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
 
@@ -24,4 +23,5 @@ class DoctorDataEntity(
         var active: Boolean? = null,
         @Field("associated_sp_id")
         var associatedSPId: String? = null,
+        var type: String? = null,
 ) : AppEntity()
