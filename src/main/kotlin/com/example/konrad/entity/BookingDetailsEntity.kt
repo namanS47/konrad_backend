@@ -15,6 +15,9 @@ class BookingDetailsEntity (
         @Field(name = "user_id")
         var userId: String? = null,
 
+        @Field(name = "aggregator_id")
+        var aggregatorId: String? = null,
+
         @Field(name = "patient_id")
         var patientId: String? = null,
 
@@ -49,7 +52,10 @@ class BookingDetailsEntity (
         var scheduledTime: Date? = null,
 
         @Field(name = "booking_status_list")
-        var bookingStatusList: List<BookingStatus>? = null,
+        var bookingStatusList: MutableList<BookingStatus>? = null,
+
+        @Field(name = "current_status")
+        var currentStatus: String? = null,
 
         @Field(name = "uploaded_document_list")
         var uploadedDocumentList: List<UploadedDocument>? = null,

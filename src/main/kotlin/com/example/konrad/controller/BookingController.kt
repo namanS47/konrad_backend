@@ -5,6 +5,7 @@ import com.example.konrad.services.BookingService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -23,5 +24,25 @@ class BookingController(
         return bookingService.addNewBooking(bookingDetailsModel, userToken)
     }
 
-    
+    @RolesAllowed("SERVICE_PROVIDER")
+    @GetMapping("/aggregator")
+    fun getAllAggregatorBookings(@RequestHeader(name="Authorization") aggregatorToken: String): ResponseEntity<*> {
+        return bookingService.getAllBookingAssociatedWithProvider(aggregatorToken)
+    }
+
+    @RolesAllowed("SERVICE_PROVIDER")
+    @PostMapping("/confirm")
+    fun confirmBooking(@RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
+        return bookingService.confirmBooking(bookingDetailsModel)
+    }
+
+    @GetMapping("/amount")
+    fun fetchBookingAmount(): ResponseEntity<*> {
+        return bookingService.getBookingAmount()
+    }
+
+    @PostMapping("/status")
+    fun updateBookingStatus(@RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
+        return bookingService.updateBookingStatus(bookingDetailsModel)
+    }
 }

@@ -11,6 +11,7 @@ data class BookingDetailsModel(
         var id: String? = null,
         var bookingId: String? = null,
         var userId: String? = null,
+        var aggregatorId: String? = null,
         var patientId: String? = null,
         var addressId: String? = null,
         var doctorId: String? = null,
@@ -21,16 +22,15 @@ data class BookingDetailsModel(
         var bookingAmount: Double? = null,
         var totalAmount: Double? = null,
         var scheduledBooking: Boolean? = null,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS", timezone = "IST")
         var scheduledTime: Date? = null,
-        var bookingStatusList: List<BookingStatus>? = null,
+        var bookingStatusList: MutableList<BookingStatus>? = null,
+        var currentStatus: String? = null,
         var uploadedDocumentList: List<UploadedDocument>? = null,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class BookingStatus(
         var status: String,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS", timezone = "IST")
         var dateTime: Date,
 )
 
@@ -41,14 +41,20 @@ data class UploadedDocument(
 )
 
 object BookingDetailsConvertor {
-    fun toEntity(bookingDetailsModel: BookingDetailsModel): BookingDetailsEntity {
-        val entity = BookingDetailsEntity()
+    fun toEntity(bookingDetailsModel: BookingDetailsModel, bookingDetailsEntity: BookingDetailsEntity?): BookingDetailsEntity {
+        val entity = bookingDetailsEntity ?: BookingDetailsEntity()
         entity.apply {
+            bookingDetailsModel.id?.let {
+                id = it
+            }
             bookingDetailsModel.bookingId?.let {
                 bookingId = it
             }
             bookingDetailsModel.userId?.let {
                 userId = it
+            }
+            bookingDetailsModel.aggregatorId?.let {
+                aggregatorId = it
             }
             bookingDetailsModel.patientId?.let {
                 patientId = it
@@ -86,6 +92,9 @@ object BookingDetailsConvertor {
             bookingDetailsModel.bookingStatusList?.let {
                 bookingStatusList = it
             }
+
+            currentStatus = bookingStatusList?.last()?.status
+
             bookingDetailsModel.uploadedDocumentList?.let {
                 uploadedDocumentList = it
             }
@@ -96,8 +105,14 @@ object BookingDetailsConvertor {
     fun toModel(bookingDetailsEntity: BookingDetailsEntity): BookingDetailsModel {
         val model = BookingDetailsModel()
         model.apply {
-            bookingId = bookingDetailsEntity.bookingId
+            id = bookingDetailsEntity.id
+            bookingDetailsEntity.bookingId?.let {
+                bookingId = it
+            }.run {
+                bookingId = bookingDetailsEntity.id!!.substring(bookingDetailsEntity.id!!.length - 10)
+            }
             userId = bookingDetailsEntity.userId
+            aggregatorId = bookingDetailsEntity.aggregatorId
             patientId = bookingDetailsEntity.patientId
             addressId = bookingDetailsEntity.addressId
             doctorId = bookingDetailsEntity.doctorId
@@ -110,24 +125,64 @@ object BookingDetailsConvertor {
             scheduledBooking = bookingDetailsEntity.scheduledBooking
             scheduledTime = bookingDetailsEntity.scheduledTime
             bookingStatusList = bookingDetailsEntity.bookingStatusList
+            currentStatus = bookingDetailsEntity.currentStatus
             uploadedDocumentList = bookingDetailsEntity.uploadedDocumentList
         }
         return model
     }
 
     fun isNewBookingValid(bookingDetailsModel: BookingDetailsModel): ResponseModel<Boolean> {
-        if(bookingDetailsModel.patientId.isNullOrEmpty()) {
+        if (bookingDetailsModel.patientId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "patientId can not be empty")
         }
-        if(bookingDetailsModel.addressId.isNullOrEmpty()) {
+        if (bookingDetailsModel.addressId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "addressId can not be empty")
         }
-        if(bookingDetailsModel.userId.isNullOrEmpty()) {
+        if (bookingDetailsModel.userId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "userId can not be empty")
         }
-        if(!DoctorDataObject.isDoctorExpertiseValid(bookingDetailsModel.requestedExpertise)) {
+        if (!DoctorDataObject.isDoctorExpertiseValid(bookingDetailsModel.requestedExpertise)) {
             return ResponseModel(success = false, reason = "Requested expertise is invalid")
         }
         return ResponseModel(success = true)
     }
+
+    fun isConfirmBookingRequestValid(bookingDetailsModel: BookingDetailsModel): ResponseModel<Boolean> {
+//        val isNewBookingValidResponse = isNewBookingValid(bookingDetailsModel)
+//        if (isNewBookingValidResponse.success == false) {
+//            return isNewBookingValidResponse
+//        }
+        if(bookingDetailsModel.id.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "id can not be empty")
+        }
+        if (bookingDetailsModel.doctorId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "doctorId can not be empty")
+        }
+        if (bookingDetailsModel.driverId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "driverId can not be empty")
+        }
+        if (bookingDetailsModel.nurseId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "nurseId can not be empty")
+        }
+        return ResponseModel(success = true)
+    }
+
+    fun getStatusOfBooking(status: String): StatusOfBooking {
+        return when(status) {
+            "BookingConfirmed" -> StatusOfBooking.BookingConfirmed
+            "DoctorAssigned" -> StatusOfBooking.DoctorAssigned
+            "DoctorOnTheWay" -> StatusOfBooking.DoctorOnTheWay
+            "DoctorReached" -> StatusOfBooking.DoctorReached
+            "TreatmentStarted" -> StatusOfBooking.TreatmentStarted
+            "VisitCompleted" -> StatusOfBooking.VisitCompleted
+            "TreatmentClosed" -> StatusOfBooking.TreatmentClosed
+            else -> {
+                StatusOfBooking.Invalid
+            }
+        }
+    }
+}
+
+enum class StatusOfBooking {
+    BookingConfirmed, DoctorAssigned, DoctorOnTheWay, DoctorReached, TreatmentStarted, VisitCompleted, TreatmentClosed, Invalid
 }
