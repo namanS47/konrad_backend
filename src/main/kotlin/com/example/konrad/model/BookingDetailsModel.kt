@@ -44,9 +44,6 @@ object BookingDetailsConvertor {
     fun toEntity(bookingDetailsModel: BookingDetailsModel, bookingDetailsEntity: BookingDetailsEntity?): BookingDetailsEntity {
         val entity = bookingDetailsEntity ?: BookingDetailsEntity()
         entity.apply {
-            bookingDetailsModel.id?.let {
-                id = it
-            }
             bookingDetailsModel.bookingId?.let {
                 bookingId = it
             }
@@ -148,10 +145,6 @@ object BookingDetailsConvertor {
     }
 
     fun isConfirmBookingRequestValid(bookingDetailsModel: BookingDetailsModel): ResponseModel<Boolean> {
-//        val isNewBookingValidResponse = isNewBookingValid(bookingDetailsModel)
-//        if (isNewBookingValidResponse.success == false) {
-//            return isNewBookingValidResponse
-//        }
         if(bookingDetailsModel.id.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "id can not be empty")
         }

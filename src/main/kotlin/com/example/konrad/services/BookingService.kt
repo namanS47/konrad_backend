@@ -2,10 +2,13 @@ package com.example.konrad.services
 
 import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.constants.ApplicationConstants
+import com.example.konrad.entity.BookingLocationEntity
 import com.example.konrad.model.*
+import com.example.konrad.repositories.BookingLocationRepository
 import com.example.konrad.repositories.BookingRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.annotation.Id
+import org.springframework.cache.annotation.CachePut
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -14,6 +17,7 @@ import java.util.Date
 @Service
 class BookingService(
         @Autowired private val bookingRepository: BookingRepository,
+        @Autowired private val bookingLocationRepository: BookingLocationRepository,
         @Autowired private val jwtTokenUtil: JwtTokenUtil
 ) {
     fun addNewBooking(bookingDetailsModel: BookingDetailsModel, userToken: String): ResponseEntity<*> {
@@ -24,8 +28,14 @@ class BookingService(
                 //TODO: Add aggregator id here and send notification to aggregator
                 bookingDetailsModel.aggregatorId = "sp1username"
 
-                bookingDetailsModel.bookingAmount = ApplicationConstants.bookingAmount
+                //Add frh location as initial booking location
+                addBookingLocation(bookingDetailsModel)
+
+                bookingDetailsModel.bookingAmount = ApplicationConstants.BOOKING_AMOUNT
+
+                //Add booking status
                 bookingDetailsModel.bookingStatusList = mutableListOf(addBookingStatus(StatusOfBooking.BookingConfirmed))
+
                 bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, null))
                 ResponseEntity.ok(ResponseModel(success = true, body = null))
             } catch (e: Exception) {
@@ -58,7 +68,7 @@ class BookingService(
     }
 
     fun getBookingAmount(): ResponseEntity<*> {
-        val bookingAmount = ApplicationConstants.bookingAmount
+        val bookingAmount = ApplicationConstants.BOOKING_AMOUNT
         return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("booking_amount" to bookingAmount)))
     }
 
@@ -77,6 +87,51 @@ class BookingService(
                 bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, bookingDetailsEntity.get()))
                 ResponseEntity.ok(ResponseModel(success = true, body = null))
             }
+        }
+    }
+
+    @CachePut(value = ["namam1"], key = "#bookingLocationEntity.id")
+    fun addBookingLocation(bookingDetailsModel: BookingDetailsModel): BookingLocationEntity {
+        val bookingLocationModel = BookingLocationModel()
+        bookingLocationModel.apply {
+            bookingLocation = ApplicationConstants.FRH_AGGREGATOR_LOCATION
+            bookingId = bookingDetailsModel.id
+        }
+        return bookingLocationRepository.save(BookingLocationConvertor.toEntity(bookingLocationModel))
+    }
+
+    @CachePut(value = ["namam1"], key = "#a0.bookingId")
+    fun updateBookingLocation(bookingLocationModel: BookingLocationModel): BookingLocationModel? {
+        return bookingLocationModel
+//        if(BookingLocationConvertor.isUpdateBookingModelValid(bookingLocationModel)) {
+//            val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingLocationModel.bookingId!!)
+//            if(bookingLocationResponse.isPresent) {
+//                val bookingLocationEntity = bookingLocationResponse.get()
+//                bookingLocationEntity.bookingLocation = bookingLocationModel.bookingLocation
+//                return bookingLocationRepository.save(bookingLocationEntity)
+//            }
+//        }
+//        return BookingLocationEntity()
+    }
+
+    @Cacheable(value = ["namam1"], key = "#bookingId")
+    fun getBookingLocationRedis(bookingId: String): BookingLocationModel? {
+        val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingId)
+        return if(bookingLocationResponse.isPresent) {
+            BookingLocationConvertor.toModel(bookingLocationResponse.get())
+        } else {
+            null
+        }
+    }
+
+    fun getBookingLocation(bookingId: String): ResponseEntity<*> {
+        val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingId)
+        return if(bookingLocationResponse.isPresent) {
+            ResponseEntity.ok(ResponseModel(success = true,
+                    body = BookingLocationConvertor.toModel(bookingLocationResponse.get())))
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false,
+                    reason = "booking id doesn't exist", body= null))
         }
     }
 
