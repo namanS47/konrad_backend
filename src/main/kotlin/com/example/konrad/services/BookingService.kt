@@ -28,18 +28,20 @@ class BookingService(
                 //TODO: Add aggregator id here and send notification to aggregator
                 bookingDetailsModel.aggregatorId = "sp1username"
 
-                //Add frh location as initial booking location
-                addBookingLocation(bookingDetailsModel)
-
                 bookingDetailsModel.bookingAmount = ApplicationConstants.BOOKING_AMOUNT
 
                 //Add booking status
                 bookingDetailsModel.bookingStatusList = mutableListOf(addBookingStatus(StatusOfBooking.BookingConfirmed))
 
-                bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, null))
+                val bookingDetailsEntity = bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, null))
+
+                //Add frh location as initial booking location
+                addBookingLocation(BookingDetailsConvertor.toModel(bookingDetailsEntity))
+
                 ResponseEntity.ok(ResponseModel(success = true, body = null))
             } catch (e: Exception) {
-                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, body = null))
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false,
+                    body = null, reason = e.message ?: "Something went wrong"))
             }
         } else {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(newBookingValid)
@@ -90,7 +92,7 @@ class BookingService(
         }
     }
 
-    @CachePut(value = ["namam1"], key = "#bookingLocationEntity.id")
+    @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.id")
     fun addBookingLocation(bookingDetailsModel: BookingDetailsModel): BookingLocationEntity {
         val bookingLocationModel = BookingLocationModel()
         bookingLocationModel.apply {
@@ -100,7 +102,7 @@ class BookingService(
         return bookingLocationRepository.save(BookingLocationConvertor.toEntity(bookingLocationModel))
     }
 
-    @CachePut(value = ["namam1"], key = "#a0.bookingId")
+    @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.bookingId")
     fun updateBookingLocation(bookingLocationModel: BookingLocationModel): BookingLocationModel? {
         return bookingLocationModel
 //        if(BookingLocationConvertor.isUpdateBookingModelValid(bookingLocationModel)) {
@@ -114,7 +116,7 @@ class BookingService(
 //        return BookingLocationEntity()
     }
 
-    @Cacheable(value = ["namam1"], key = "#bookingId")
+    @Cacheable(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#bookingId")
     fun getBookingLocationRedis(bookingId: String): BookingLocationModel? {
         val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingId)
         return if(bookingLocationResponse.isPresent) {

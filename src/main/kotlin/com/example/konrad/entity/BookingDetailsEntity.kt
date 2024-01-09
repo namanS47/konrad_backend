@@ -9,8 +9,8 @@ import java.util.*
 
 @Document(collection = "bookings")
 class BookingDetailsEntity (
-        @Field(name = "booking_id")
-        var bookingId: String? = null,
+        @Field(name = "booking_id_serialized")
+        var bookingIdSerialized: String? = null,
 
         @Field(name = "user_id")
         var userId: String? = null,

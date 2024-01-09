@@ -1,31 +1,30 @@
 package com.example.konrad.model
 
 import com.example.konrad.entity.BookingDetailsEntity
-import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import java.util.Date
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class BookingDetailsModel(
-        var id: String? = null,
-        var bookingId: String? = null,
-        var userId: String? = null,
-        var aggregatorId: String? = null,
-        var patientId: String? = null,
-        var addressId: String? = null,
-        var doctorId: String? = null,
-        var driverId: String? = null,
-        var nurseId: String? = null,
-        var requestedExpertise: String? = null,
-        var driverLocation: LatLong? = null,
-        var bookingAmount: Double? = null,
-        var totalAmount: Double? = null,
-        var scheduledBooking: Boolean? = null,
-        var scheduledTime: Date? = null,
-        var bookingStatusList: MutableList<BookingStatus>? = null,
-        var currentStatus: String? = null,
-        var uploadedDocumentList: List<UploadedDocument>? = null,
+    var id: String? = null,
+    var bookingIdSerialized: String? = null,
+    var userId: String? = null,
+    var aggregatorId: String? = null,
+    var patientId: String? = null,
+    var addressId: String? = null,
+    var doctorId: String? = null,
+    var driverId: String? = null,
+    var nurseId: String? = null,
+    var requestedExpertise: String? = null,
+    var driverLocation: LatLong? = null,
+    var bookingAmount: Double? = null,
+    var totalAmount: Double? = null,
+    var scheduledBooking: Boolean? = null,
+    var scheduledTime: Date? = null,
+    var bookingStatusList: MutableList<BookingStatus>? = null,
+    var currentStatus: String? = null,
+    var uploadedDocumentList: List<UploadedDocument>? = null,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -44,9 +43,6 @@ object BookingDetailsConvertor {
     fun toEntity(bookingDetailsModel: BookingDetailsModel, bookingDetailsEntity: BookingDetailsEntity?): BookingDetailsEntity {
         val entity = bookingDetailsEntity ?: BookingDetailsEntity()
         entity.apply {
-            bookingDetailsModel.bookingId?.let {
-                bookingId = it
-            }
             bookingDetailsModel.userId?.let {
                 userId = it
             }
@@ -103,10 +99,10 @@ object BookingDetailsConvertor {
         val model = BookingDetailsModel()
         model.apply {
             id = bookingDetailsEntity.id
-            bookingDetailsEntity.bookingId?.let {
-                bookingId = it
+            bookingDetailsEntity.bookingIdSerialized?.let {
+                bookingIdSerialized = it
             }.run {
-                bookingId = bookingDetailsEntity.id!!.substring(bookingDetailsEntity.id!!.length - 10)
+                bookingIdSerialized = bookingDetailsEntity.id!!.substring(bookingDetailsEntity.id!!.length - 10)
             }
             userId = bookingDetailsEntity.userId
             aggregatorId = bookingDetailsEntity.aggregatorId
