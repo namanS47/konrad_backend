@@ -54,7 +54,7 @@ class BookingController(
 
     @GetMapping("location")
     fun fetchBookingLocation(@RequestHeader bookingId: String): ResponseEntity<*> {
-//        return bookingService.getBookingLocation(bookingId)
-        return ResponseEntity.ok(bookingService.getBookingLocationRedis(bookingId))
+        return bookingService.getBookingLocation(bookingId)
+//        return ResponseEntity.ok(bookingService.getBookingLocationRedis(bookingId))
     }
 }

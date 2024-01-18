@@ -103,17 +103,8 @@ class BookingService(
     }
 
     @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.bookingId")
-    fun updateBookingLocation(bookingLocationModel: BookingLocationModel): BookingLocationModel? {
+    fun updateBookingLocationRedis(bookingLocationModel: BookingLocationModel): BookingLocationModel? {
         return bookingLocationModel
-//        if(BookingLocationConvertor.isUpdateBookingModelValid(bookingLocationModel)) {
-//            val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingLocationModel.bookingId!!)
-//            if(bookingLocationResponse.isPresent) {
-//                val bookingLocationEntity = bookingLocationResponse.get()
-//                bookingLocationEntity.bookingLocation = bookingLocationModel.bookingLocation
-//                return bookingLocationRepository.save(bookingLocationEntity)
-//            }
-//        }
-//        return BookingLocationEntity()
     }
 
     @Cacheable(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#bookingId")
@@ -123,6 +114,17 @@ class BookingService(
             BookingLocationConvertor.toModel(bookingLocationResponse.get())
         } else {
             null
+        }
+    }
+
+    fun updateBookingLocation(bookingLocationModel: BookingLocationModel) {
+        if(BookingLocationConvertor.isUpdateBookingModelValid(bookingLocationModel)) {
+            val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingLocationModel.bookingId!!)
+            if(bookingLocationResponse.isPresent) {
+                val bookingLocationEntity = bookingLocationResponse.get()
+                bookingLocationEntity.bookingLocation = bookingLocationModel.bookingLocation
+                bookingLocationRepository.save(bookingLocationEntity)
+            }
         }
     }
 
