@@ -22,10 +22,13 @@ class AppController(
         @Autowired private val addressService: AddressService,
         @Autowired private val userService: UserService
 ) {
+//    @GetMapping("/")
+//    fun runDistanceMatrix() {
+//        distanceMatrixServices.getDistance()
+//    }
+
     @GetMapping("/")
-    fun runDistanceMatrix() {
-        distanceMatrixServices.getDistance()
-    }
+    fun getHello(): String = "Hello Naman"
 
     @RolesAllowed("ADMIN")
     @PostMapping("/addUser")

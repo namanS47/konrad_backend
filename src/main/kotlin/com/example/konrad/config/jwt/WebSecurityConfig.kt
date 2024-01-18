@@ -32,7 +32,7 @@ class WebSecurityConfig() {
         httpSecurity
                 .csrf{it.disable()}
                 .authorizeHttpRequests{
-            it.requestMatchers("/authenticate", "/authenticate/otp").permitAll()
+            it.requestMatchers("/authenticate", "/authenticate/otp", "/").permitAll()
                     .anyRequest().authenticated()
         }.exceptionHandling{exception ->  exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)}
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }

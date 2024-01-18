@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+#  redis:
+#    container_name: redis
+#    hostname: redis
+#    command: ["redis-server", "--bind", "redis", "--port", "6379"]
+#    image: redis:7.2.3-alpine
+#    restart: always
+#    ports:
+#      - '6379:6379'
+
+  konrad-docker-compose-container:
+    container_name: konrad-docker-compose-container
+    platform: linux/x86_64
+    image: konrad-docker-image:1
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+#    depends_on:
+#      - redis

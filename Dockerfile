@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM --platform=linux/x86_64 openjdk:17-jdk-alpine
 
 #For Generating jar file inside container
 #FROM maven as maven_build
