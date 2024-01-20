@@ -2,10 +2,11 @@ package com.example.konrad.services
 
 import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.constants.ApplicationConstants
-import com.example.konrad.entity.BookingLocationEntity
 import com.example.konrad.model.*
+import com.example.konrad.repositories.AddressDetailsRepository
 import com.example.konrad.repositories.BookingLocationRepository
 import com.example.konrad.repositories.BookingRepository
+import com.example.konrad.utility.AsyncMethods
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
@@ -16,9 +17,11 @@ import java.util.Date
 
 @Service
 class BookingService(
-        @Autowired private val bookingRepository: BookingRepository,
-        @Autowired private val bookingLocationRepository: BookingLocationRepository,
-        @Autowired private val jwtTokenUtil: JwtTokenUtil
+    @Autowired private val bookingRepository: BookingRepository,
+    @Autowired private val bookingLocationRepository: BookingLocationRepository,
+    @Autowired private val jwtTokenUtil: JwtTokenUtil,
+    @Autowired private val addressDetailsRepository: AddressDetailsRepository,
+    @Autowired private val asyncMethods: AsyncMethods,
 ) {
     fun addNewBooking(bookingDetailsModel: BookingDetailsModel, userToken: String): ResponseEntity<*> {
         bookingDetailsModel.userId = jwtTokenUtil.getUsernameFromToken(userToken)
@@ -35,8 +38,8 @@ class BookingService(
 
                 val bookingDetailsEntity = bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, null))
 
-                //Add frh location as initial booking location
-                addBookingLocation(BookingDetailsConvertor.toModel(bookingDetailsEntity))
+                //Add frh location as initial booking location Asynchronously
+                asyncMethods.addBookingLocation(BookingDetailsConvertor.toModel(bookingDetailsEntity))
 
                 ResponseEntity.ok(ResponseModel(success = true, body = null))
             } catch (e: Exception) {
@@ -92,15 +95,17 @@ class BookingService(
         }
     }
 
-    @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.id")
-    fun addBookingLocation(bookingDetailsModel: BookingDetailsModel): BookingLocationEntity {
-        val bookingLocationModel = BookingLocationModel()
-        bookingLocationModel.apply {
-            bookingLocation = ApplicationConstants.FRH_AGGREGATOR_LOCATION
-            bookingId = bookingDetailsModel.id
-        }
-        return bookingLocationRepository.save(BookingLocationConvertor.toEntity(bookingLocationModel))
-    }
+//    @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.id")
+//    fun addBookingLocation(bookingDetailsModel: BookingDetailsModel): BookingLocationEntity {
+//        val bookingLocationModel = BookingLocationModel()
+//        val addressEntity = addressDetailsRepository.findById(bookingDetailsModel.addressId!!)
+//        bookingLocationModel.apply {
+//            bookingLocation = ApplicationConstants.FRH_AGGREGATOR_LOCATION
+//            bookingId = bookingDetailsModel.id
+//            patientLocation = addressEntity.get().latLong
+//        }
+//        return bookingLocationRepository.save(BookingLocationConvertor.toEntity(bookingLocationModel))
+//    }
 
     @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.bookingId")
     fun updateBookingLocationRedis(bookingLocationModel: BookingLocationModel): BookingLocationModel? {
@@ -122,8 +127,11 @@ class BookingService(
             val bookingLocationResponse = bookingLocationRepository.findByBookingId(bookingLocationModel.bookingId!!)
             if(bookingLocationResponse.isPresent) {
                 val bookingLocationEntity = bookingLocationResponse.get()
-                bookingLocationEntity.bookingLocation = bookingLocationModel.bookingLocation
-                bookingLocationRepository.save(bookingLocationEntity)
+                if(bookingLocationModel.lastUpdated!! > bookingLocationEntity.modifiedAt) {
+                    bookingLocationEntity.bookingLocation = bookingLocationModel.bookingLocation
+                    bookingLocationEntity.directionResponse = bookingLocationModel.directionResponse
+                    bookingLocationRepository.save(bookingLocationEntity)
+                }
             }
         }
     }
