@@ -3,6 +3,7 @@ package com.example.konrad.services
 import com.example.konrad.model.DirectionApiResponseModel
 import com.example.konrad.model.DirectionResponse
 import com.example.konrad.model.LatLong
+import com.google.gson.Gson
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
@@ -21,13 +22,17 @@ class MapsService {
         uri+= "key=${mapsKey}"
 
         val restTemplate = RestTemplate()
-        val response = restTemplate.getForEntity(uri, DirectionApiResponseModel::class.java)
+        val responseString = restTemplate.getForEntity(uri, String::class.java)
+
+
+        val response = Gson().fromJson(responseString.body, DirectionApiResponseModel::class.java)
+
 
         val directionResponse= DirectionResponse()
         directionResponse.apply {
-            polylinePointsEncoded = response.body?.routes?.first()?.overviewPolyline?.points
-            totalDistance = response.body?.routes?.first()?.legs?.first()?.distance?.text
-            totalDuration = response.body?.routes?.first()?.legs?.first()?.duration?.text
+            polylinePointsEncoded = response?.routes?.first()?.overviewPolyline?.points
+            totalDistance = response?.routes?.first()?.legs?.first()?.distance?.text
+            totalDuration = response?.routes?.first()?.legs?.first()?.duration?.text
         }
         return directionResponse
     }

@@ -29,8 +29,8 @@ class AddressService(
         }
 
         return try {
-            addressDetailsRepository.save(AddressDetailsConvertor.toEntity(addressDetailsModel))
-            ResponseEntity.ok(ResponseModel(success = true, body = null))
+            val addressEntity = addressDetailsRepository.save(AddressDetailsConvertor.toEntity(addressDetailsModel))
+            ResponseEntity.ok(ResponseModel(success = true, body = AddressDetailsConvertor.toModel(addressEntity)))
         } catch (e: Exception) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, reason = e.message, body = null))
         }
@@ -38,8 +38,10 @@ class AddressService(
 
     fun getAllAddressByUserToken(token: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(token)
-        val addressList = addressDetailsRepository.findAllByUserId(username)
-        return ResponseEntity.ok(ResponseModel(success = true, body = addressList.map { AddressDetailsConvertor.toModel(it) }))
+        val addressList = addressDetailsRepository.findAllByUserId(username).map {
+            AddressDetailsConvertor.toModel(it)
+        }
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("address_list" to addressList)))
     }
 
     fun getAddressByAddressId(addressId: String): ResponseEntity<*> {

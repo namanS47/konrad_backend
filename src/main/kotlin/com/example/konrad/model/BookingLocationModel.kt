@@ -24,7 +24,7 @@ data class DirectionResponse (
     var polylinePointsEncoded: String? = null,
 
     @Field(name = "polyline_points_decoded")
-    var polylinePointsDecoded: List<List<String>>? = null,
+    var polylinePointsDecoded: List<List<Double>>? = null,
 
     @Field(name = "total_distance")
     var totalDistance: String? = null,

@@ -62,6 +62,18 @@ class AppController(
         return ResponseEntity.ok(driverService.getDriverDetailsByUserId(driverId))
     }
 
+    @GetMapping("/driver/bookings")
+    fun fetchAllBookingsAssociatedWithDriver(
+        @RequestHeader(name="Authorization") driverToken: String): ResponseEntity<*> {
+        return driverService.fetchAllBookingsAssociatedWithDriver(driverToken)
+    }
+
+    @GetMapping("/user/bookings")
+    fun fetchAllBookingsAssociatedWithUser(
+        @RequestHeader(name="Authorization") driverToken: String): ResponseEntity<*> {
+        return userService.fetchAllBookingsAssociatedWithUser(driverToken)
+    }
+
     @RolesAllowed("CUSTOMER")
     @PostMapping("patient/address")
     fun savePatientAddress(@RequestHeader (name="Authorization") userToken: String,

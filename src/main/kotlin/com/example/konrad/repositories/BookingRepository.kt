@@ -6,4 +6,7 @@ import java.util.Optional
 
 interface BookingRepository: MongoRepository<BookingDetailsEntity, String> {
     fun findAllByAggregatorId(aggregatorId: String): List<BookingDetailsEntity>
+    fun findAllByDriverId(driverId: String): List<BookingDetailsEntity>
+
+    fun findAllByUserId(userId: String): List<BookingDetailsEntity>
 }
