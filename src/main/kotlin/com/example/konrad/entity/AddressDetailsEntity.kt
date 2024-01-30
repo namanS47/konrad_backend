@@ -17,4 +17,12 @@ class AddressDetailsEntity(
         @Field(name = "lat_long")
         var latLong: LatLong? = null,
         var description: String? = null,
+        var neighborhood: String? = null,
+        var route: String? = null,
+        @Field(name = "sub_locality")
+        var subLocality: String? = null,
+        var locality: String? = null,
+        @Field("administrative_area")
+        var administrativeArea: String? = null,
+        var country: String? = null
 ): AppEntity()

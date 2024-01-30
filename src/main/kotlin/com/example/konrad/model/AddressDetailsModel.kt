@@ -14,6 +14,12 @@ data class AddressDetailsModel(
         var type: String? = null,
         var latLong: LatLong? = null,
         var description: String? = null,
+        var neighborhood: String? = null,
+        var route: String? = null,
+        var subLocality: String? = null,
+        var locality: String? = null,
+        var administrativeArea: String? = null,
+        var country: String? = null
 )
 
 object AddressDetailsConvertor {
@@ -27,6 +33,12 @@ object AddressDetailsConvertor {
             type = addressDetailsModel.type
             latLong = addressDetailsModel.latLong
             description = addressDetailsModel.description
+            neighborhood = addressDetailsModel.neighborhood
+            route = addressDetailsModel.route
+            subLocality = addressDetailsModel.subLocality
+            locality = addressDetailsModel.locality
+            administrativeArea = addressDetailsModel.administrativeArea
+            country = addressDetailsModel.country
         }
         return entity
     }
@@ -42,6 +54,12 @@ object AddressDetailsConvertor {
             type = addressDetailsEntity.type
             latLong = addressDetailsEntity.latLong
             description = addressDetailsEntity.description
+            neighborhood = addressDetailsEntity.neighborhood
+            route = addressDetailsEntity.route
+            subLocality = addressDetailsEntity.subLocality
+            locality = addressDetailsEntity.locality
+            administrativeArea = addressDetailsEntity.administrativeArea
+            country = addressDetailsEntity.country
         }
         return model
     }

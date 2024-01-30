@@ -126,10 +126,11 @@ object DoctorDataObject {
 
     fun isDoctorExpertiseValid(expertise: String?): Boolean {
         return expertise == DoctorExpertise.GeneralPhysician.name ||
-                expertise == DoctorExpertise.Pediatrician.name
+                expertise == DoctorExpertise.Pediatrician.name ||
+                expertise == DoctorExpertise.PhysioTherapist.name
     }
 }
 
 enum class DoctorExpertise {
-    Pediatrician, GeneralPhysician
+    Pediatrician, GeneralPhysician, PhysioTherapist
 }
