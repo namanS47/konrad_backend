@@ -1,6 +1,7 @@
 package com.example.konrad.services
 
 import com.example.konrad.config.jwt.JwtTokenUtil
+import com.example.konrad.model.BookingDetailsConvertor
 import com.example.konrad.model.PatientDetailsModel
 import com.example.konrad.model.PatientDetailsObject
 import com.example.konrad.model.ResponseModel
@@ -36,8 +37,8 @@ class UserService(
         }
 
         return try {
-            patientRepository.save(PatientDetailsObject.toEntity(patientDetailsModel))
-            ResponseEntity.ok(ResponseModel(success = true, body = null))
+            val patientDetailsEntity = patientRepository.save(PatientDetailsObject.toEntity(patientDetailsModel))
+            ResponseEntity.ok(ResponseModel(success = true, body = PatientDetailsObject.toModel(patientDetailsEntity)))
         } catch (e: Exception) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseModel(success = false, reason = e.message, body = null))
@@ -47,10 +48,14 @@ class UserService(
     fun getAllPatientList(userToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(userToken)
         val patientList = patientRepository.findAllByUserId(username)
+            .map {
+                PatientDetailsObject.toModel(it)
+            }
         return ResponseEntity.ok(
             ResponseModel(
                 success = true,
-                body = patientList.map { PatientDetailsObject.toModel(it) })
+                body = mapOf("patient_list" to patientList)
+            )
         )
     }
 
@@ -66,7 +71,9 @@ class UserService(
 
     fun fetchAllBookingsAssociatedWithUser(userToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(userToken)
-        val bookingsList = bookingRepository.findAllByUserId(username)
+        val bookingsList = bookingRepository.findAllByUserId(username).map {
+            BookingDetailsConvertor.toModel(it)
+        }
         return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList)))
     }
 }
