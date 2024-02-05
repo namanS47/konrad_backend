@@ -15,4 +15,6 @@ class UserDetailsEntity (
         var roles: List<String>? = null,
         @Field("mobile_number")
         var mobileNumber: String? = null,
+        @Field("country_code")
+        var countryCode: String? = null,
 ): AppEntity()

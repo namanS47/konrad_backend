@@ -14,6 +14,8 @@ data class UserDetailsModel (
         var password: String? = null,
         var enabled: Boolean? = null,
         var roles: List<String>? = null,
+        var mobileNumber: String? = null,
+        var countryCode: String? = null,
         var otp: String? = null,
 )
 
@@ -27,6 +29,8 @@ object UserDetailsConvertor {
             password = userDetailsModel.password
             enabled = userDetailsModel.enabled
             roles = userDetailsModel.roles
+            mobileNumber = userDetailsModel.mobileNumber
+            countryCode = userDetailsModel.countryCode
         }
         return entity
     }

@@ -57,6 +57,15 @@ class JwtUserDetailsService(
         }
     }
 
+    fun getUserByMobileNumber(mobileNumber: String, countryCode: String): ResponseModel<UserDetailsEntity> {
+        val response = userDetailsRepository.findByMobileNumberAndCountryCode(mobileNumber, countryCode)
+        return if(response.isPresent) {
+            ResponseModel(success = true, body = response.get())
+        } else{
+            ResponseModel(success = false, reason = "User doesn't exist")
+        }
+    }
+
     fun addUser(userDetailsModel: UserDetailsModel): ResponseEntity<*> {
         val userDetailsEntity = UserDetailsConvertor.toEntity(userDetailsModel)
         val response = userDetailsEntity.username?.let { userDetailsRepository.findByUsername(it) }
@@ -71,6 +80,7 @@ class JwtUserDetailsService(
 
     fun addNewUserAuthenticatedViaOtp(userDetailsModel: UserDetailsModel): ResponseModel<Boolean> {
         return try {
+            userDetailsModel.username = userDetailsModel.countryCode + userDetailsModel.mobileNumber
             userDetailsModel.roles = listOf(UserRoles.CUSTOMER)
             userDetailsModel.enabled = true
             userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))

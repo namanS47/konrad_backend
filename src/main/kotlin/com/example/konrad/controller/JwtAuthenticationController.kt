@@ -20,6 +20,11 @@ class JwtAuthenticationController(
         return authenticationService.authentication(authenticationRequest)
     }
 
+    @RequestMapping(value = ["/authenticate/otp/request"], method = [RequestMethod.POST])
+    fun requestOtp(@RequestBody authenticationRequest: UserDetailsModel): ResponseEntity<*> {
+        return authenticationService.sendOtp(authenticationRequest)
+    }
+
     @RequestMapping(value = ["/authenticate/otp"], method = [RequestMethod.POST])
     fun createAuthenticationTokenByOtp(@RequestBody authenticationRequest: UserDetailsModel): ResponseEntity<*> {
         return authenticationService.authenticationViaOtp(authenticationRequest)

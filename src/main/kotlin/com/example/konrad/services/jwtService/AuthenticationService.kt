@@ -4,6 +4,7 @@ import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.model.jwt_models.JwtResponse
 import com.example.konrad.model.ResponseModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
+import com.example.konrad.utility.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -41,19 +42,49 @@ class AuthenticationService(
         }
     }
 
+    fun sendOtp(authenticationRequest: UserDetailsModel): ResponseEntity<*> {
+        return try{
+            if(authenticationRequest.mobileNumber.isNullOrEmpty() ||
+                !StringUtils.isNumeric(authenticationRequest.mobileNumber!!) ||
+                authenticationRequest.countryCode.isNullOrEmpty() ||
+                !StringUtils.isNumeric(authenticationRequest.countryCode!!)) {
+                ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false,
+                    reason = "invalid mobile number or country code", body = null))
+            } else {
+                //TODO: send otp to user
+                ResponseEntity.ok(ResponseModel(success = true, body = null))
+            }
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseModel(success = false, reason = e.message, body = null))
+        }
+    }
+
     fun authenticationViaOtp(authenticationRequest: UserDetailsModel): ResponseEntity<*> {
         try {
+            if(authenticationRequest.otp.isNullOrEmpty() ||
+                !StringUtils.isNumeric(authenticationRequest.otp!!) ||
+                authenticationRequest.mobileNumber.isNullOrEmpty() ||
+                !StringUtils.isNumeric(authenticationRequest.mobileNumber!!) ||
+                authenticationRequest.countryCode.isNullOrEmpty() ||
+                !StringUtils.isNumeric(authenticationRequest.countryCode!!)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false,
+                    reason = "invalid credentials", body = null))
+            }
             //TODO: verify otp with otp service provider
-            val verified = true
+            var verified = false
+            if(authenticationRequest.otp == "8949") {
+                verified = true
+            }
 
             if(!verified) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResponseModel(success = false,
                         reason = "invalid credentials", body = null))
             }
 
-            val userDetailsResponse = userDetailsService.getUserByUserName(authenticationRequest.username!!)
+            val userDetailsResponse = userDetailsService.getUserByMobileNumber(
+                authenticationRequest.mobileNumber!!, authenticationRequest.countryCode!!)
             return if(userDetailsResponse.success == true) {
-                val authTokenResponse = fetchAuthToken(authenticationRequest.username!!)
+                val authTokenResponse = fetchAuthToken(userDetailsResponse.body!!.username!!)
                 ResponseEntity.ok(authTokenResponse)
             } else {
                 val response = userDetailsService.addNewUserAuthenticatedViaOtp(authenticationRequest)
