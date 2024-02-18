@@ -1,5 +1,6 @@
 package com.example.konrad.controller
 
+import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.model.AddressDetailsModel
 import com.example.konrad.model.PatientDetailsModel
 import com.example.konrad.model.ServiceProviderDataModel
@@ -10,6 +11,8 @@ import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.net.URL
 
 @RestController
 @RequestMapping("/")
@@ -20,7 +23,8 @@ class AppController(
         @Autowired private val doctorService: DoctorService,
         @Autowired private val driverService: DriverService,
         @Autowired private val addressService: AddressService,
-        @Autowired private val userService: UserService
+        @Autowired private val userService: UserService,
+    @Autowired private val awsService: AwsS3Service
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -108,5 +112,15 @@ class AppController(
     @GetMapping("/patient/id")
     fun getPatientWithId(@RequestHeader id: String): ResponseEntity<*> {
         return userService.getPatientById(id)
+    }
+
+    @PostMapping("/saveImage")
+    fun saveFileToS3(@RequestPart("file") file: MultipartFile) {
+        awsService.saveFilePrivate(file)
+    }
+
+    @GetMapping("/imageUrl")
+    fun fetchS3ImageUrl(): URL {
+        return awsService.generatePreSignedUrl("1708239745Letterofrenounciation_Naman.pdf")
     }
 }
