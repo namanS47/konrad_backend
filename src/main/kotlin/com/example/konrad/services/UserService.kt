@@ -110,4 +110,16 @@ class UserService(
         }
         return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList)))
     }
+
+    fun fetchUserPatientProfile(userToken: String): ResponseEntity<*> {
+        val username = jwtTokenUtil.getUsernameFromToken(userToken)
+        val patientList = patientRepository.findAllByUserId(username)
+        patientList.forEach {
+            if (it.relationShip == PatientRelation.Myself.name) {
+                return ResponseEntity.ok()
+                    .body(ResponseModel(success = true, body = PatientDetailsObject.toModel(it)))
+            }
+        }
+        return ResponseEntity.ok().body(ResponseModel(success = false, reason = "Profile not added yet", body = null))
+    }
 }

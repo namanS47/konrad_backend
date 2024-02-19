@@ -61,4 +61,9 @@ class PatientController(
     fun addProfilePicture(@RequestPart("file") file: MultipartFile, @RequestHeader id: String): ResponseEntity<*> {
         return userService.addPatientProfilePicture(file, id)
     }
+
+    @GetMapping("/profile")
+    fun fetchUserPatientProfile(@RequestHeader(name = "Authorization") userToken: String): ResponseEntity<*> {
+        return userService.fetchUserPatientProfile(userToken)
+    }
 }
