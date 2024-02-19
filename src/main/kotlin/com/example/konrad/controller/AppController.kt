@@ -1,8 +1,6 @@
 package com.example.konrad.controller
 
 import com.example.konrad.aws.s3.AwsS3Service
-import com.example.konrad.model.AddressDetailsModel
-import com.example.konrad.model.PatientDetailsModel
 import com.example.konrad.model.ServiceProviderDataModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
@@ -22,7 +20,6 @@ class AppController(
         @Autowired private val aggregatorService: AggregatorService,
         @Autowired private val doctorService: DoctorService,
         @Autowired private val driverService: DriverService,
-        @Autowired private val addressService: AddressService,
         @Autowired private val userService: UserService,
     @Autowired private val awsService: AwsS3Service
 ) {
@@ -78,49 +75,37 @@ class AppController(
         return userService.fetchAllBookingsAssociatedWithUser(driverToken)
     }
 
-    @RolesAllowed("CUSTOMER")
-    @PostMapping("patient/address")
-    fun savePatientAddress(@RequestHeader (name="Authorization") userToken: String,
-                           @RequestBody addressDetailsModel: AddressDetailsModel): ResponseEntity<*> {
-        return addressService.saveAddress(addressDetailsModel, userToken)
-    }
-
-    @GetMapping("patient/address/id")
-    fun getAddressByAddressId(@RequestHeader addressId: String): ResponseEntity<*> {
-        return addressService.getAddressByAddressId(addressId)
-    }
-
-    @RolesAllowed("CUSTOMER")
-    @GetMapping("patient/address")
-    fun getAddressByToken(@RequestHeader (name="Authorization") userToken: String): ResponseEntity<*> {
-        return addressService.getAllAddressByUserToken(userToken)
-    }
-
-    @RolesAllowed("CUSTOMER")
-    @PostMapping("patient")
-    fun addPatient(@RequestHeader (name="Authorization") userToken: String,
-                   @RequestBody patientDetailsModel: PatientDetailsModel): ResponseEntity<*> {
-        return userService.addPatient(patientDetailsModel, userToken)
-    }
-
-    @RolesAllowed("CUSTOMER")
-    @GetMapping("/patient")
-    fun getAllPatientWithToken(@RequestHeader (name="Authorization") userToken: String): ResponseEntity<*> {
-        return userService.getAllPatientList(userToken)
-    }
-
-    @GetMapping("/patient/id")
-    fun getPatientWithId(@RequestHeader id: String): ResponseEntity<*> {
-        return userService.getPatientById(id)
-    }
-
     @PostMapping("/saveImage")
-    fun saveFileToS3(@RequestPart("file") file: MultipartFile) {
-        awsService.saveFilePrivate(file)
+    fun saveFileToS3(@RequestPart("file") file: MultipartFile): ResponseEntity<*> {
+        val response =  awsService.uploadFileToPrivateBucket(file)
+        return ResponseEntity.ok(response)
     }
 
     @GetMapping("/imageUrl")
-    fun fetchS3ImageUrl(): URL {
-        return awsService.generatePreSignedUrl("1708239745Letterofrenounciation_Naman.pdf")
+    fun fetchS3ImageUrl(@RequestHeader imageUrl: String): URL {
+        return awsService.generatePreSignedUrl(imageUrl)
+    }
+
+    @PostMapping("/file")
+    fun uploadFile(
+        @RequestPart("file") file: MultipartFile,
+        @RequestPart("userId") userId: String?,
+        @RequestPart("patientId") patientId: String?,
+        @RequestPart("bookingId") bookingId: String?,
+        @RequestPart("title") title: String?,
+        @RequestPart("fileType") fileType: String?
+    ): ResponseEntity<*> {
+        return awsService.saveFile(file, userId, patientId, bookingId, title, fileType)
+    }
+
+    @GetMapping("/files")
+    fun fetchFiles(
+        @RequestHeader("userId") userId: String?,
+        @RequestHeader("patientId") patientId: String?,
+        @RequestHeader("bookingId") bookingId: String?,
+        @RequestHeader("title") title: String?,
+        @RequestHeader("fileType") fileType: String?
+    ): ResponseEntity<*> {
+        return awsService.getFileDetails(userId, patientId, bookingId, title, fileType)
     }
 }

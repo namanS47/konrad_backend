@@ -11,6 +11,11 @@ data class PatientDetailsModel(
         var name: String? = null,
         var age: Int? = null,
         var gender: String? = null,
+        var email: String? = null,
+        var profilePictureUrl: String? = null,
+        var mobileNumber: String? = null,
+        var countryCode: String? = null,
+        var relationShip: String? = null,
         var language: String? = null,
 )
 
@@ -22,6 +27,10 @@ object PatientDetailsObject {
             name = patientDetailsModel.name
             age = patientDetailsModel.age
             gender = patientDetailsModel.gender
+            email = patientDetailsModel.email
+            mobileNumber = patientDetailsModel.mobileNumber
+            countryCode = patientDetailsModel.countryCode
+            relationShip = patientDetailsModel.relationShip
             language = patientDetailsModel.language
         }
         return entity
@@ -53,8 +62,23 @@ object PatientDetailsObject {
         if(patientDetailsModel.gender.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "gender can not be empty")
         }
+        if(patientDetailsModel.mobileNumber.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "mobile number can not be empty")
+        }
+        if(!isRelationshipTypeValid(patientDetailsModel.relationShip)) {
+            return ResponseModel(success = false, reason = "invalid relationship type")
+        }
         return ResponseModel(success = true)
+    }
+
+    private fun isRelationshipTypeValid(relationShip: String?): Boolean {
+        return relationShip == PatientRelation.Myself.name ||
+                relationShip == PatientRelation.Spouse.name ||
+                relationShip == PatientRelation.Friend.name ||
+                relationShip == PatientRelation.Other.name
     }
 }
 
-
+enum class PatientRelation {
+    Myself, Spouse, Friend, Other
+}

@@ -1,22 +1,22 @@
 package com.example.konrad.services
 
+import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.config.jwt.JwtTokenUtil
-import com.example.konrad.model.BookingDetailsConvertor
-import com.example.konrad.model.PatientDetailsModel
-import com.example.konrad.model.PatientDetailsObject
-import com.example.konrad.model.ResponseModel
+import com.example.konrad.model.*
 import com.example.konrad.repositories.BookingRepository
 import com.example.konrad.repositories.PatientRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 class UserService(
     @Autowired private val patientRepository: PatientRepository,
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
     @Autowired private val bookingRepository: BookingRepository,
+    @Autowired private val awsService: AwsS3Service
 ) {
     fun addPatient(patientDetailsModel: PatientDetailsModel, token: String): ResponseEntity<*> {
         if (!patientDetailsModel.id.isNullOrEmpty()) {
@@ -31,6 +31,22 @@ class UserService(
         val username = jwtTokenUtil.getUsernameFromToken(token)
         patientDetailsModel.userId = username
         val isPatientDetailsValid = PatientDetailsObject.isPatientValid(patientDetailsModel)
+
+        if (patientDetailsModel.relationShip == PatientRelation.Myself.name) {
+            val patientList = patientRepository.findAllByUserId(username)
+            patientList.forEach {
+                if (it.relationShip == PatientRelation.Myself.name) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(
+                            ResponseModel(
+                                success = false,
+                                reason = "Patient Profile with Myself already created",
+                                body = null
+                            )
+                        )
+                }
+            }
+        }
 
         if (isPatientDetailsValid.success != true) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(isPatientDetailsValid)
@@ -66,6 +82,24 @@ class UserService(
         } else {
             ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ResponseModel(success = false, body = null, reason = "No patient found with this id"))
+        }
+    }
+
+    fun addPatientProfilePicture(file: MultipartFile, patientId: String): ResponseEntity<*> {
+        val saveFileResponse = awsService.uploadFileToPrivateBucket(file)
+        return if (saveFileResponse.success == true) {
+            val patientResponse = patientRepository.findById(patientId)
+            if (patientResponse.isPresent) {
+                val patient = patientResponse.get()
+                patient.profilePictureFileName = saveFileResponse.body
+                patientRepository.save(patient)
+                ResponseEntity.ok(ResponseModel(success = true, body = null))
+            } else {
+                ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseModel(success = false, body = null, reason = "No patient found with this id"))
+            }
+        } else {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(saveFileResponse)
         }
     }
 
