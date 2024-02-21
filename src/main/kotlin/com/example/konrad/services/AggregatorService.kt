@@ -134,10 +134,10 @@ class AggregatorService(
 
     fun getAllDoctorsAssociatedWithSP(spToken: String): ResponseEntity<*> {
         val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
-        val associatedDoctorsList = doctorsDataRepository.findAllByAssociatedSPId(spUsername)
-        return ResponseEntity.ok(ResponseModel(success = true, body = associatedDoctorsList.map {
+        val associatedDoctorsList = doctorsDataRepository.findAllByAssociatedSPId(spUsername).map {
             DoctorDataObject.toModel(it)
-        }))
+        }
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("doctor_list" to associatedDoctorsList)))
     }
 
 
@@ -176,9 +176,9 @@ class AggregatorService(
 
     fun getAllDriversAssociatedWithSP(spToken: String): ResponseEntity<*> {
         val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
-        val associatedDriversList = driverDataRepository.findAllByAssociatedSPId(spUsername)
-        return ResponseEntity.ok(ResponseModel(success = true, body = associatedDriversList.map {
+        val associatedDriversList = driverDataRepository.findAllByAssociatedSPId(spUsername).map {
             DriverDataObject.toModel(it)
-        }))
+        }
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("driver_list" to associatedDriversList)))
     }
 }

@@ -54,8 +54,10 @@ class AwsS3Service(
             fileUploadModel.fileName = uploadFileResponse.body
             fileUploadModel.title = title
 
-            fileDetailsRepository.save(FileUploadModelConvertor.toEntity(fileUploadModel))
-            ResponseEntity.ok(ResponseModel(success = true, body = null))
+            val savedFileDetails = fileDetailsRepository.save(FileUploadModelConvertor.toEntity(fileUploadModel))
+            val savedFileDetailsModel = FileUploadModelConvertor.toModel(savedFileDetails)
+            savedFileDetailsModel.fileUrl = generatePreSignedUrl(fileUploadModel.fileName)
+            ResponseEntity.ok(ResponseModel(success = true, body = savedFileDetailsModel))
         } else {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(uploadFileResponse)
         }
@@ -96,7 +98,7 @@ class AwsS3Service(
             fileDetailsModel
         }
 
-        return ResponseEntity.ok(ResponseModel(success = true, body = fileDetailsModelList))
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("files" to fileDetailsModelList)))
     }
 
     fun uploadFileToPrivateBucket(file: MultipartFile): ResponseModel<String> {
