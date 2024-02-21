@@ -6,6 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Field
 
 @Document(collection = "doctor_details")
 class DoctorDataEntity(
+        @Field("user_id")
+        var userId: String? = null,
         var username: String? = null,
         var name: String? = null,
         var age: Int? = null,
@@ -13,6 +15,8 @@ class DoctorDataEntity(
         var languages: List<String>? = null,
         @Field("contact_number")
         var contactNumber: String? = null,
+        @Field("country_code")
+        var countryCode: String? = null,
         var email: String? = null,
         var expertise: String? = null,
         var experience: String? = null,

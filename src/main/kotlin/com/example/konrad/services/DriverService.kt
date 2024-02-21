@@ -18,7 +18,7 @@ class DriverService(
     fun getDriverDetails(driverToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(driverToken)
 
-        val response = getDriverDetailsByUserName(username)
+        val response = getDriverDetailsByUserNameOrUserId(username)
 
         return if (response.success == true) {
             ResponseEntity.ok(response)
@@ -27,8 +27,8 @@ class DriverService(
         }
     }
 
-    fun getDriverDetailsByUserName(username: String): ResponseModel<DriverDataModel> {
-        val response = driverDataRepository.findByUsername(username)
+    fun getDriverDetailsByUserNameOrUserId(value: String): ResponseModel<DriverDataModel> {
+        val response = driverDataRepository.findByUsernameOrUserId(value)
         return if (response.isPresent) {
             ResponseModel(success = true, body = DriverDataObject.toModel(response.get()))
         } else {
@@ -36,8 +36,8 @@ class DriverService(
         }
     }
 
-    fun getDriverDetailsByUserId(userId: String): ResponseModel<DriverDataModel> {
-        val response = driverDataRepository.findById(userId)
+    fun getDriverDetailsById(id: String): ResponseModel<DriverDataModel> {
+        val response = driverDataRepository.findById(id)
         return if (response.isPresent) {
             ResponseModel(success = true, body = DriverDataObject.toModel(response.get()))
         } else {
@@ -47,7 +47,7 @@ class DriverService(
 
     fun fetchAllBookingsAssociatedWithDriver(driverToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(driverToken)
-        val driverDetails = getDriverDetailsByUserName(username)
+        val driverDetails = getDriverDetailsByUserNameOrUserId(username)
         val bookingsList = driverDetails.body?.userId?.let { bookingRepository.findAllByDriverId(it) }
             ?.map { BookingDetailsConvertor.toModel(it) }
         return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList),

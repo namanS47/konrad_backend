@@ -24,7 +24,7 @@ class JwtUserDetailsService(
 ) : UserDetailsService {
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
-        val response = userDetailsRepository.findByUsername(username)
+        val response = userDetailsRepository.findByUsernameOrUserId(username)
         return if (response.isPresent) {
             val userDetailsEntity = response.get()
             if(userDetailsEntity.roles?.get(0) == UserRoles.CUSTOMER) {
@@ -49,7 +49,7 @@ class JwtUserDetailsService(
 
     // This method returns user details without password
     fun getUserByUserName(username: String): ResponseModel<UserDetailsEntity> {
-        val response = userDetailsRepository.findByUsername(username)
+        val response = userDetailsRepository.findByUsernameOrUserId(username)
         return if(response.isPresent) {
             ResponseModel(success = true, body = response.get())
         } else{
@@ -68,7 +68,7 @@ class JwtUserDetailsService(
 
     fun addUser(userDetailsModel: UserDetailsModel): ResponseEntity<*> {
         val userDetailsEntity = UserDetailsConvertor.toEntity(userDetailsModel)
-        val response = userDetailsEntity.username?.let { userDetailsRepository.findByUsername(it) }
+        val response = userDetailsEntity.username?.let { userDetailsRepository.findByUsernameOrUserId(it) }
         return if(response?.isPresent != true) {
             userDetailsEntity.password = passwordEncoder.encode(userDetailsEntity.password)
             userDetailsRepository.save(userDetailsEntity)
@@ -80,7 +80,7 @@ class JwtUserDetailsService(
 
     fun addNewUserAuthenticatedViaOtp(userDetailsModel: UserDetailsModel): ResponseModel<Boolean> {
         return try {
-            userDetailsModel.username = userDetailsModel.countryCode + userDetailsModel.mobileNumber
+            userDetailsModel.userId = userDetailsModel.countryCode + userDetailsModel.mobileNumber
             userDetailsModel.roles = listOf(UserRoles.CUSTOMER)
             userDetailsModel.enabled = true
             userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))

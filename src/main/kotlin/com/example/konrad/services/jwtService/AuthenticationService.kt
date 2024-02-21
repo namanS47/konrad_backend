@@ -12,7 +12,6 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
 
 @Service
@@ -84,12 +83,12 @@ class AuthenticationService(
             val userDetailsResponse = userDetailsService.getUserByMobileNumber(
                 authenticationRequest.mobileNumber!!, authenticationRequest.countryCode!!)
             return if(userDetailsResponse.success == true) {
-                val authTokenResponse = fetchAuthToken(userDetailsResponse.body!!.username!!)
+                val authTokenResponse = fetchAuthToken(userDetailsResponse.body!!.userId!!)
                 ResponseEntity.ok(authTokenResponse)
             } else {
                 val response = userDetailsService.addNewUserAuthenticatedViaOtp(authenticationRequest)
                 if(response.success == true) {
-                    val authTokenResponse = fetchAuthToken(authenticationRequest.username!!)
+                    val authTokenResponse = fetchAuthToken(authenticationRequest.userId!!)
                     ResponseEntity.ok(authTokenResponse)
                 } else {
                     ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
@@ -100,11 +99,11 @@ class AuthenticationService(
         }
     }
 
-    fun fetchAuthToken(username: String): ResponseModel<JwtResponse> {
-        val userDetailsResponse = userDetailsService.getUserByUserName(username)
+    fun fetchAuthToken(id: String): ResponseModel<JwtResponse> {
+        val userDetailsResponse = userDetailsService.getUserByUserName(id)
         return if(userDetailsResponse.success == true) {
             val userDetails = userDetailsResponse.body!!
-            val token = jwtTokenUtil.generateToken(userDetails, userDetails.roles?.get(0) ?: "")
+            val token = jwtTokenUtil.generateToken(id, userDetails.roles?.get(0) ?: "")
             val userRole = userDetails.roles?.get(0)?.substring(5)
             ResponseModel(success = true, body = JwtResponse(token, userRole))
         } else {

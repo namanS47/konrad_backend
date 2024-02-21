@@ -32,7 +32,7 @@ class AggregatorService(
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null, reason = "User Id can not be empty"))
         }
 
-        val response = serviceProviderDataModel.username?.let { userDetailsRepository.findByUsername(it) }
+        val response = serviceProviderDataModel.username?.let { userDetailsRepository.findByUsernameOrUserId(it) }
         if(response?.isPresent == true) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, reason = "username already exist", body = null))
         }
@@ -82,7 +82,7 @@ class AggregatorService(
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(isDoctorValidResponse)
         }
 
-        val response = doctorDataModel.username?.let { userDetailsRepository.findByUsername(it) }
+        val response = doctorDataModel.username?.let { userDetailsRepository.findByUsernameOrUserId(it) }
         if(response?.isPresent == true) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, reason = "username already exist", body = null))
         }
@@ -116,7 +116,7 @@ class AggregatorService(
         }
 
         //If user tries to create doctor by sending userId
-        val response = doctorDataModel.username?.let { userDetailsRepository.findByUsername(it) }
+        val response = doctorDataModel.username?.let { userDetailsRepository.findByUsernameOrUserId(it) }
         if(response?.isPresent == true) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, reason = "username already exist", body = null))
         }
@@ -148,7 +148,7 @@ class AggregatorService(
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(isDriverValidResponse)
         }
 
-        val response = driverDataModel.username?.let { userDetailsRepository.findByUsername(it) }
+        val response = driverDataModel.username?.let { userDetailsRepository.findByUsernameOrUserId(it) }
         if(response?.isPresent == true) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, reason = "username already exist", body = null))
         }

@@ -49,8 +49,8 @@ class AppController(
     }
 
     @GetMapping("/doctor/id")
-    fun fetchDoctorDetailsById(@RequestHeader doctorId: String): ResponseEntity<*> {
-        return ResponseEntity.ok(doctorService.getDoctorDetailsByUserId(doctorId))
+    fun fetchDoctorDetailsById(@RequestHeader id: String): ResponseEntity<*> {
+        return ResponseEntity.ok(doctorService.getDoctorDetailsById(id))
     }
 
     @GetMapping("/driver")
@@ -59,8 +59,8 @@ class AppController(
     }
 
     @GetMapping("/driver/id")
-    fun fetchDriverDetailsById(@RequestHeader driverId: String): ResponseEntity<*> {
-        return ResponseEntity.ok(driverService.getDriverDetailsByUserId(driverId))
+    fun fetchDriverDetailsById(@RequestHeader id: String): ResponseEntity<*> {
+        return ResponseEntity.ok(driverService.getDriverDetailsById(id))
     }
 
     @GetMapping("/driver/bookings")

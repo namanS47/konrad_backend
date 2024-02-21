@@ -18,7 +18,7 @@ class DoctorService(
     fun getDoctorDetails(doctorToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(doctorToken)
 
-        val response = getDoctorDetailsByUserName(username)
+        val response = getDoctorDetailsByUserNameOrUserId(username)
 
         return if(response.success == true) {
             ResponseEntity.ok(response)
@@ -27,8 +27,8 @@ class DoctorService(
         }
     }
 
-    fun getDoctorDetailsByUserName(username: String): ResponseModel<DoctorDataModel> {
-        val response = doctorsDataRepository.findByUsername(username)
+    fun getDoctorDetailsByUserNameOrUserId(value: String): ResponseModel<DoctorDataModel> {
+        val response = doctorsDataRepository.findByUsernameOrUserId(value)
         return if(response.isPresent) {
             ResponseModel(success = true, body = DoctorDataObject.toModel(response.get()))
         } else {
@@ -36,8 +36,8 @@ class DoctorService(
         }
     }
 
-    fun getDoctorDetailsByUserId(userId: String): ResponseModel<DoctorDataModel> {
-        val response = doctorsDataRepository.findById(userId)
+    fun getDoctorDetailsById(id: String): ResponseModel<DoctorDataModel> {
+        val response = doctorsDataRepository.findById(id)
         return if(response.isPresent) {
             ResponseModel(success = true, body = DoctorDataObject.toModel(response.get()))
         } else {

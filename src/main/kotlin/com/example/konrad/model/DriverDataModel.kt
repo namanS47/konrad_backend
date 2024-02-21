@@ -13,6 +13,7 @@ data class DriverDataModel(
         var name: String? = null,
         var password: String? = null,
         var contactNumber: String? = null,
+        var countryCode: String? = null,
         var location: LatLong? = null,
         var profilePictureUrl: String? = null,
         var associatedSPId: String? = null,
@@ -21,10 +22,12 @@ data class DriverDataModel(
 object DriverDataObject {
     fun toEntity(driverDataModel: DriverDataModel): DriverDataEntity {
         val entity = DriverDataEntity()
-        entity.apply { 
+        entity.apply {
+            userId = driverDataModel.userId
             username = driverDataModel.username
             name = driverDataModel.name
             contactNumber = driverDataModel.contactNumber
+            countryCode = driverDataModel.countryCode
             location = driverDataModel.location
             profilePictureUrl = driverDataModel.profilePictureUrl
             associatedSPId = driverDataModel.associatedSPId
@@ -35,10 +38,11 @@ object DriverDataObject {
     fun toModel(driverDataEntity: DriverDataEntity): DriverDataModel {
         val model = DriverDataModel()
         model.apply {
-            userId = driverDataEntity.id
+            userId = driverDataEntity.userId
             username = driverDataEntity.username
             name = driverDataEntity.name
             contactNumber = driverDataEntity.contactNumber
+            countryCode = driverDataEntity.countryCode
             location = driverDataEntity.location
             profilePictureUrl = driverDataEntity.profilePictureUrl
             associatedSPId = driverDataEntity.associatedSPId

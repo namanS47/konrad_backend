@@ -48,9 +48,9 @@ class JwtTokenUtil : Serializable {
     }
 
     //generate token for user
-    fun generateToken(userDetails: UserDetailsEntity, role: String): String {
+    fun generateToken(id: String, role: String): String {
         val claims: Map<String, Any> = hashMapOf("roles" to role)
-        return doGenerateToken(claims, userDetails.username!!)
+        return doGenerateToken(claims, id)
     }
 
     //while creating the token -

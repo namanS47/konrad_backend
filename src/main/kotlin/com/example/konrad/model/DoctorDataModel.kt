@@ -16,6 +16,7 @@ data class DoctorDataModel(
         var gender: String? = null,
         var languages: List<String>? = null,
         var contactNumber: String? = null,
+        var countryCode: String? = null,
         var email: String? = null,
         var expertise: String? = null,
         var experience: String? = null,
@@ -33,12 +34,14 @@ object DoctorDataObject {
     fun toEntity(doctorDataModel: DoctorDataModel): DoctorDataEntity {
         val entity = DoctorDataEntity()
         entity.apply {
+            userId = doctorDataModel.userId
             username = doctorDataModel.username
             name = doctorDataModel.name
             age = doctorDataModel.age
             gender = doctorDataModel.gender
             languages = doctorDataModel.languages
             contactNumber = doctorDataModel.contactNumber
+            countryCode = doctorDataModel.countryCode
             email = doctorDataModel.email
             expertise = doctorDataModel.expertise
             experience = doctorDataModel.experience
@@ -55,13 +58,14 @@ object DoctorDataObject {
     fun toModel(doctorDataEntity: DoctorDataEntity): DoctorDataModel {
         val model = DoctorDataModel()
         model.apply {
-            userId = doctorDataEntity.id
+            userId = doctorDataEntity.userId
             username = doctorDataEntity.username
             name = doctorDataEntity.name
             age = doctorDataEntity.age
             gender = doctorDataEntity.gender
             languages = doctorDataEntity.languages
             contactNumber = doctorDataEntity.contactNumber
+            countryCode = doctorDataEntity.countryCode
             email = doctorDataEntity.email
             expertise = doctorDataEntity.expertise
             experience = doctorDataEntity.experience
