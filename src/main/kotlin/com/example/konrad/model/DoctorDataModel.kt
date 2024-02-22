@@ -8,24 +8,24 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DoctorDataModel(
-        var userId: String? = null,
-        var username: String? = null,
-        var name: String? = null,
-        var password: String? = null,
-        var age: Int? = null,
-        var gender: String? = null,
-        var languages: List<String>? = null,
-        var contactNumber: String? = null,
-        var countryCode: String? = null,
-        var email: String? = null,
-        var expertise: String? = null,
-        var experience: String? = null,
-        var info: String? = null,
-        var location: LatLong? = null,
-        var profilePictureUrl: String? = null,
-        var active: Boolean? = null,
-        var associatedSPId: String? = null,
-        var type: String? = null,
+    var userId: String? = null,
+    var username: String? = null,
+    var name: String? = null,
+    var password: String? = null,
+    var age: Int? = null,
+    var gender: String? = null,
+    var languages: List<String>? = null,
+    var contactNumber: String? = null,
+    var countryCode: String? = null,
+    var email: String? = null,
+    var expertise: String? = null,
+    var experience: String? = null,
+    var info: String? = null,
+    var location: LatLong? = null,
+    var profilePictureUrl: String? = null,
+    var active: Boolean? = null,
+    var associatedSPId: String? = null,
+    var type: String? = null,
 )
 
 object DoctorDataObject {
@@ -79,6 +79,48 @@ object DoctorDataObject {
         return model
     }
 
+    fun updateDoctorDetails(doctorDataModel: DoctorDataModel, doctorDataEntity: DoctorDataEntity): DoctorDataEntity {
+        doctorDataEntity.apply {
+            doctorDataModel.name?.let {
+                name = it
+            }
+            doctorDataModel.age?.let {
+                age = it
+            }
+            doctorDataModel.gender?.let {
+                gender = it
+            }
+            doctorDataModel.languages?.let {
+                languages = it
+            }
+            doctorDataModel.contactNumber?.let {
+                contactNumber = it
+            }
+            doctorDataModel.countryCode?.let {
+                countryCode = it
+            }
+            doctorDataModel.email?.let {
+                email = it
+            }
+            doctorDataModel.expertise?.let {
+                expertise = it
+            }
+            doctorDataModel.experience?.let {
+                experience = it
+            }
+            doctorDataModel.info?.let {
+                info = it
+            }
+            doctorDataModel.active?.let {
+                active = it
+            }
+            doctorDataModel.type?.let {
+                type = it
+            }
+        }
+        return doctorDataEntity
+    }
+
     fun isDoctorDetailsValidWithCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
         if (doctorDataModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty", body = null)
@@ -95,9 +137,6 @@ object DoctorDataObject {
         if (doctorDataModel.age == null) {
             return ResponseModel(success = false, reason = "age can not be empty", body = null)
         }
-        if (doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "profile can not be empty", body = null)
-        }
         if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
             return ResponseModel(success = false, reason = "incorrect type")
         }
@@ -106,6 +145,9 @@ object DoctorDataObject {
     }
 
     fun isDoctorDetailsValidWithoutCredentials(doctorDataModel: DoctorDataModel): ResponseModel<Boolean> {
+        if (!doctorDataModel.userId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "userid is auto created")
+        }
         if (doctorDataModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty")
         }
@@ -115,9 +157,6 @@ object DoctorDataObject {
         if (doctorDataModel.age == null) {
             return ResponseModel(success = false, reason = "age can not be empty")
         }
-        if (doctorDataModel.profilePictureUrl.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "profile picture can not be empty")
-        }
         if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
             return ResponseModel(success = false, reason = "incorrect type! either $TYPE_DOCTOR or $TYPE_NURSE")
         }
@@ -125,6 +164,19 @@ object DoctorDataObject {
             return ResponseModel(success = false, reason = "incorrect expertise")
         }
 
+        return ResponseModel(success = true)
+    }
+
+    fun isUpdateDoctorDetailsValid(doctorDataModel: DoctorDataModel) :ResponseModel<Boolean> {
+        if(doctorDataModel.username.isNullOrEmpty() && doctorDataModel.userId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "invalid username or userid", body = null)
+        }
+        if (!isDoctorExpertiseValid(doctorDataModel.expertise)) {
+            return ResponseModel(success = false, reason = "incorrect expertise")
+        }
+        if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
+            return ResponseModel(success = false, reason = "incorrect type")
+        }
         return ResponseModel(success = true)
     }
 

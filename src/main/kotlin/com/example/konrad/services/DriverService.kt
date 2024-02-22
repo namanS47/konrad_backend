@@ -15,6 +15,24 @@ class DriverService(
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
     @Autowired private val bookingRepository: BookingRepository,
 ) {
+
+    fun updateDriverDetails(driverDataModel: DriverDataModel): ResponseEntity<*> {
+        val isUpdateDetailsValidResponse = DriverDataObject.isUpdateDriverDetailsValid(driverDataModel)
+        if (isUpdateDetailsValidResponse.success == false) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(isUpdateDetailsValidResponse)
+        }
+
+        val driverDataEntityResponse = driverDataRepository.findByUsernameOrUserId(driverDataModel.username!!)
+        return if (driverDataEntityResponse.isPresent) {
+            var driverDataEntity = DriverDataObject.updateDriverDetails(driverDataModel, driverDataEntityResponse.get())
+            driverDataEntity = driverDataRepository.save(driverDataEntity)
+            ResponseEntity.ok(ResponseModel(success = true, body = DriverDataObject.toModel(driverDataEntity)))
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "username or userid doesn't exist", body = null))
+        }
+    }
     fun getDriverDetails(driverToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(driverToken)
 

@@ -1,6 +1,8 @@
 package com.example.konrad.controller
 
 import com.example.konrad.aws.s3.AwsS3Service
+import com.example.konrad.model.DoctorDataModel
+import com.example.konrad.model.DriverDataModel
 import com.example.konrad.model.ServiceProviderDataModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
@@ -53,6 +55,11 @@ class AppController(
         return ResponseEntity.ok(doctorService.getDoctorDetailsById(id))
     }
 
+    @PutMapping("/doctor")
+    fun updateDoctor(@RequestBody doctorDataModel: DoctorDataModel): ResponseEntity<*> {
+        return doctorService.updateDoctorDetails(doctorDataModel)
+    }
+
     @GetMapping("/driver")
     fun fetchDriverDetailsByToken(@RequestHeader(name="Authorization") driverToken: String): ResponseEntity<*> {
         return driverService.getDriverDetails(driverToken)
@@ -61,6 +68,11 @@ class AppController(
     @GetMapping("/driver/id")
     fun fetchDriverDetailsById(@RequestHeader id: String): ResponseEntity<*> {
         return ResponseEntity.ok(driverService.getDriverDetailsById(id))
+    }
+
+    @PutMapping("/driver")
+    fun updateDriver(@RequestBody driverDataModel: DriverDataModel): ResponseEntity<*> {
+        return driverService.updateDriverDetails(driverDataModel)
     }
 
     @GetMapping("/driver/bookings")

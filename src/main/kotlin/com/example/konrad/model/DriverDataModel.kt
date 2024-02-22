@@ -50,6 +50,24 @@ object DriverDataObject {
         return model
     }
 
+    fun updateDriverDetails(driverDataModel: DriverDataModel, driverDataEntity: DriverDataEntity): DriverDataEntity {
+        driverDataEntity.apply {
+            driverDataModel.name?.let {
+                name = it
+            }
+            driverDataModel.contactNumber?.let {
+                contactNumber = it
+            }
+            driverDataModel.countryCode?.let {
+                countryCode = it
+            }
+            driverDataModel.location?.let {
+                location = it
+            }
+        }
+        return driverDataEntity
+    }
+
     fun isDriverDetailsValidWithCredentials(driverDataModel: DriverDataModel): ResponseModel<Boolean> {
         if(driverDataModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty", body = null)
@@ -63,10 +81,14 @@ object DriverDataObject {
         if(driverDataModel.contactNumber.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "contact number can not be empty", body = null)
         }
-        if(driverDataModel.profilePictureUrl.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "profile can not be empty", body = null)
-        }
 
         return ResponseModel(success = true, body = null)
+    }
+
+    fun isUpdateDriverDetailsValid(driverDataModel: DriverDataModel): ResponseModel<Boolean> {
+        if(driverDataModel.username.isNullOrEmpty() && driverDataModel.userId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "invalid username or userid", body = null)
+        }
+        return ResponseModel(success = true)
     }
 }
