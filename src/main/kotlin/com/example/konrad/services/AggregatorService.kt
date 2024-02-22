@@ -10,6 +10,7 @@ import com.example.konrad.repositories.DoctorsDataRepository
 import com.example.konrad.repositories.DriverDataRepository
 import com.example.konrad.repositories.ServiceProviderRepository
 import com.example.konrad.repositories.UserDetailsRepository
+import com.example.konrad.utility.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -123,8 +124,18 @@ class AggregatorService(
 
         val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
         doctorDataModel.associatedSPId = spUsername
+        val randomId = StringUtils.generateUUID()
+        doctorDataModel.userId = randomId
 
         return try {
+            val userDetailsModel = UserDetailsModel()
+            userDetailsModel.apply {
+                name = doctorDataModel.name
+                username = randomId
+                enabled = true
+            }
+            userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
+
             doctorsDataRepository.save(DoctorDataObject.toEntity(doctorDataModel))
             ResponseEntity.ok().body(ResponseModel(success = true, body = null))
         } catch (e: Exception) {
