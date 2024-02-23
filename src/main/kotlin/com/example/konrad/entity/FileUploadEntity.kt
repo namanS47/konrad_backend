@@ -11,8 +11,8 @@ class FileUploadEntity(
     var patientId: String? = null,
     @Field("booking_id")
     var bookingId: String? = null,
-    @Field("file_name")
-    var fileName: String? = null,
+    @Field("file_bucket_path")
+    var fileBucketPath: String? = null,
     var title: String? = null,
     @Field("file_type")
     var fileType: String? = null,

@@ -100,14 +100,15 @@ class AppController(
 
     @PostMapping("/file")
     fun uploadFile(
-        @RequestPart("file") file: MultipartFile,
+        @RequestPart("file") file: MultipartFile?,
+        @RequestPart("fileS3Path") fileS3Path: String?,
         @RequestPart("userId") userId: String?,
         @RequestPart("patientId") patientId: String?,
         @RequestPart("bookingId") bookingId: String?,
         @RequestPart("title") title: String?,
         @RequestPart("fileType") fileType: String?
     ): ResponseEntity<*> {
-        return awsService.saveFile(file, userId, patientId, bookingId, title, fileType)
+        return awsService.saveFile(file, fileS3Path, userId, patientId, bookingId, title, fileType)
     }
 
     @GetMapping("/files")

@@ -28,7 +28,7 @@ class JwtUserDetailsService(
         return if (response.isPresent) {
             val userDetailsEntity = response.get()
             if(userDetailsEntity.roles?.get(0) == UserRoles.CUSTOMER) {
-                User(userDetailsEntity.username, "",
+                User(userDetailsEntity.userId, "",
                         getAuthority(userDetailsEntity.roles))
             } else {
                 User(userDetailsEntity.username, userDetailsEntity.password,

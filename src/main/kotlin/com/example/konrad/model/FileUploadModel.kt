@@ -12,7 +12,7 @@ class FileUploadModel (
     var userId: String? = null,
     var patientId: String? = null,
     var bookingId: String? = null,
-    var fileName: String? = null,
+    var fileBucketPath: String? = null,
     var title: String? = null,
     var fileType: String? = null,
     var updatedAt: Date? = null,
@@ -27,7 +27,7 @@ object FileUploadModelConvertor {
             userId = fileUploadEntity.userId
             patientId = fileUploadEntity.patientId
             bookingId = fileUploadEntity.bookingId
-            fileName = fileUploadEntity.fileName
+            fileBucketPath = fileUploadEntity.fileBucketPath
             title = fileUploadEntity.title
             fileType = fileUploadEntity.fileType
             updatedAt = fileUploadEntity.modifiedAt
@@ -41,7 +41,7 @@ object FileUploadModelConvertor {
             userId = fileUploadModel.userId
             patientId = fileUploadModel.patientId
             bookingId = fileUploadModel.bookingId
-            fileName = fileUploadModel.fileName
+            fileBucketPath = fileUploadModel.fileBucketPath
             title = fileUploadModel.title
             fileType = fileUploadModel.fileType
         }

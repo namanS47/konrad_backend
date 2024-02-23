@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.multipart.MultipartFile
 import java.net.URL
 import java.time.Instant
@@ -31,7 +30,8 @@ class AwsS3Service(
     private lateinit var bucketName: String
 
     fun saveFile(
-        file: MultipartFile,
+        file: MultipartFile?,
+        fileS3Path: String?,
         userId: String?,
         patientId: String?,
         bookingId: String?,
@@ -44,23 +44,33 @@ class AwsS3Service(
             )
         }
 
-        val uploadFileResponse = uploadFileToPrivateBucket(file)
-        return if (uploadFileResponse.success == true) {
-            val fileUploadModel = FileUploadModel()
-            fileUploadModel.userId = userId
-            fileUploadModel.patientId = patientId
-            fileUploadModel.bookingId = bookingId
-            fileUploadModel.fileType = fileType
-            fileUploadModel.fileName = uploadFileResponse.body
-            fileUploadModel.title = title
+        var fileS3PathMutable = fileS3Path
 
-            val savedFileDetails = fileDetailsRepository.save(FileUploadModelConvertor.toEntity(fileUploadModel))
-            val savedFileDetailsModel = FileUploadModelConvertor.toModel(savedFileDetails)
-            savedFileDetailsModel.fileUrl = generatePreSignedUrl(fileUploadModel.fileName)
-            ResponseEntity.ok(ResponseModel(success = true, body = savedFileDetailsModel))
-        } else {
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(uploadFileResponse)
+        if(file != null) {
+            val uploadFileResponse = uploadFileToPrivateBucket(file)
+            if(uploadFileResponse.success == false) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(uploadFileResponse)
+            } else {
+                fileS3PathMutable = uploadFileResponse.body
+            }
+        } else if(fileS3Path.isNullOrEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseModel(success = false, reason = "file and bucket path both can't be empty", body = null))
         }
+
+
+        val fileUploadModel = FileUploadModel()
+        fileUploadModel.userId = userId
+        fileUploadModel.patientId = patientId
+        fileUploadModel.bookingId = bookingId
+        fileUploadModel.fileType = fileType
+        fileUploadModel.fileBucketPath = fileS3PathMutable
+        fileUploadModel.title = title
+
+        val savedFileDetails = fileDetailsRepository.save(FileUploadModelConvertor.toEntity(fileUploadModel))
+        val savedFileDetailsModel = FileUploadModelConvertor.toModel(savedFileDetails)
+        savedFileDetailsModel.fileUrl = generatePreSignedUrl(fileUploadModel.fileBucketPath)
+        return ResponseEntity.ok(ResponseModel(success = true, body = savedFileDetailsModel))
     }
 
     fun getFileDetails(
@@ -94,7 +104,7 @@ class AwsS3Service(
 
         val fileDetailsModelList =  fileDetailsList.map {
             val fileDetailsModel = FileUploadModelConvertor.toModel(it)
-            fileDetailsModel.fileUrl = generatePreSignedUrl(it.fileName)
+            fileDetailsModel.fileUrl = generatePreSignedUrl(it.fileBucketPath)
             fileDetailsModel
         }
 
