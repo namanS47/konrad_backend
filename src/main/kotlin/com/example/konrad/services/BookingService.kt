@@ -8,6 +8,7 @@ import com.example.konrad.repositories.BookingLocationRepository
 import com.example.konrad.repositories.BookingRepository
 import com.example.konrad.utility.AsyncMethods
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
@@ -26,13 +27,16 @@ class BookingService(
     @Autowired private val addressDetailsRepository: AddressDetailsRepository,
     @Autowired private val asyncMethods: AsyncMethods,
 ) {
+    @Value("\${aggregator-user-name}")
+    private lateinit var aggregatorUsername: String
+
     fun addNewBooking(bookingDetailsModel: BookingDetailsModel, userToken: String): ResponseEntity<*> {
         bookingDetailsModel.userId = jwtTokenUtil.getUsernameFromToken(userToken)
         val newBookingValid = BookingDetailsConvertor.isNewBookingValid(bookingDetailsModel)
         return if (newBookingValid.success == true) {
             try {
                 //TODO: Add aggregator id here and send notification to aggregator
-                bookingDetailsModel.aggregatorId = "frhusername"
+                bookingDetailsModel.aggregatorId = aggregatorUsername
 
                 bookingDetailsModel.bookingAmount = ApplicationConstants.BOOKING_AMOUNT
 

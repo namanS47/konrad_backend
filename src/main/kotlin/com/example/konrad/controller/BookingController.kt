@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController
 class BookingController(
         @Autowired private val bookingService: BookingService
 ) {
-    @RolesAllowed("CUSTOMER")
     @PostMapping("/new")
     fun addNewBooking(@RequestHeader(name="Authorization") userToken: String,
                       @RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
