@@ -10,10 +10,13 @@ import com.example.konrad.utility.AsyncMethods
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
-import java.util.Date
+import java.util.*
+
 
 @Service
 class BookingService(
@@ -57,9 +60,26 @@ class BookingService(
         }
     }
 
-    fun getAllBookingAssociatedWithProvider(providerToken: String): ResponseEntity<*> {
+    fun getAllBookingAssociatedWithProvider(providerToken: String, bookingFilter: String?, page: Int, pageSize: Int): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(page-1, pageSize)
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
-        val bookingsList = bookingRepository.findAllByAggregatorId(username)
+        val filteredStatusList = mutableListOf<String>()
+
+        when (bookingFilter) {
+            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
+            BookingFilter.InProcess.name -> filteredStatusList.addAll(listOf(
+                StatusOfBooking.DoctorAssigned.name,
+                StatusOfBooking.DoctorOnTheWay.name,
+                StatusOfBooking.DoctorReached.name,
+                StatusOfBooking.TreatmentStarted.name,
+                StatusOfBooking.VisitCompleted.name,
+            ))
+            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
+            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
+        }
+
+
+        val bookingsList = bookingRepository.findAllByAggregatorIdAndFilter(username, filteredStatusList, pageable)
             .map { BookingDetailsConvertor.toModel(it) }
         return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList)))
     }

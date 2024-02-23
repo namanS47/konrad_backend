@@ -24,6 +24,8 @@ data class BookingDetailsModel(
     var scheduledTime: Date? = null,
     var bookingStatusList: MutableList<BookingStatus>? = null,
     var currentStatus: String? = null,
+    var doctorNotes: List<String>? = null,
+    var patientNotes: String? = null,
     var uploadedDocumentList: List<UploadedDocument>? = null,
 )
 
@@ -85,6 +87,12 @@ object BookingDetailsConvertor {
             bookingDetailsModel.bookingStatusList?.let {
                 bookingStatusList = it
             }
+            bookingDetailsModel.doctorNotes?.let {
+                doctorNotes = it
+            }
+            bookingDetailsModel.patientNotes?.let {
+                patientNotes = it
+            }
 
             currentStatus = bookingStatusList?.last()?.status
 
@@ -119,6 +127,8 @@ object BookingDetailsConvertor {
             scheduledTime = bookingDetailsEntity.scheduledTime
             bookingStatusList = bookingDetailsEntity.bookingStatusList
             currentStatus = bookingDetailsEntity.currentStatus
+            doctorNotes = bookingDetailsEntity.doctorNotes
+            patientNotes = bookingDetailsEntity.patientNotes
             uploadedDocumentList = bookingDetailsEntity.uploadedDocumentList
         }
         return model
@@ -165,6 +175,7 @@ object BookingDetailsConvertor {
             "TreatmentStarted" -> StatusOfBooking.TreatmentStarted
             "VisitCompleted" -> StatusOfBooking.VisitCompleted
             "TreatmentClosed" -> StatusOfBooking.TreatmentClosed
+            "Cancelled" -> StatusOfBooking.Cancelled
             else -> {
                 StatusOfBooking.Invalid
             }
@@ -173,5 +184,9 @@ object BookingDetailsConvertor {
 }
 
 enum class StatusOfBooking {
-    BookingConfirmed, DoctorAssigned, DoctorOnTheWay, DoctorReached, TreatmentStarted, VisitCompleted, TreatmentClosed, Invalid
+    BookingConfirmed, DoctorAssigned, DoctorOnTheWay, DoctorReached, TreatmentStarted, VisitCompleted, TreatmentClosed, Cancelled, Invalid
+}
+
+enum class BookingFilter {
+    NewBooking, InProcess, Completed, Cancelled
 }

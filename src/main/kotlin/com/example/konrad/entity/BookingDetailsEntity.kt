@@ -57,6 +57,12 @@ class BookingDetailsEntity (
         @Field(name = "current_status")
         var currentStatus: String? = null,
 
+        @Field(name = "doctor_notes")
+        var doctorNotes: List<String>? = null,
+
+        @Field(name = "patient_notes")
+        var patientNotes: String? = null,
+
         @Field(name = "uploaded_document_list")
         var uploadedDocumentList: List<UploadedDocument>? = null,
 ): AppEntity()
