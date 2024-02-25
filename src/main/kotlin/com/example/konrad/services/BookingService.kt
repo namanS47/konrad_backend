@@ -64,8 +64,8 @@ class BookingService(
         }
     }
 
-    fun getAllBookingAssociatedWithProvider(providerToken: String, bookingFilter: String?, page: Int, pageSize: Int): ResponseEntity<*> {
-        val pageable: Pageable = PageRequest.of(page-1, pageSize)
+    fun getAllBookingAssociatedWithProvider(providerToken: String, bookingFilter: String?, page: Int, pageSize: Int?): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(page-1, pageSize ?: ApplicationConstants.PAGE_SIZE)
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
         val filteredStatusList = mutableListOf<String>()
 

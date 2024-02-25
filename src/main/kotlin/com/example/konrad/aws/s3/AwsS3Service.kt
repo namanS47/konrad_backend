@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
 import com.example.konrad.config.AmazonConfig
+import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.entity.FileUploadEntity
 import com.example.konrad.model.FileUploadModel
 import com.example.konrad.model.FileUploadModelConvertor
@@ -12,6 +13,8 @@ import com.example.konrad.model.ResponseModel
 import com.example.konrad.repositories.FileDetailsRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -51,7 +54,7 @@ class AwsS3Service(
             if(uploadFileResponse.success == false) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(uploadFileResponse)
             } else {
-                fileS3PathMutable = uploadFileResponse.body
+                fileS3PathMutable = uploadFileResponse.body?.fileBucketPath
             }
         } else if(fileS3Path.isNullOrEmpty()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -78,27 +81,29 @@ class AwsS3Service(
         patientId: String?,
         bookingId: String?,
         title: String?,
-        fileType: String?
+        fileType: List<String>?,
+        page: Int, pageSize: Int?
     ): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(page-1, pageSize ?: ApplicationConstants.PAGE_SIZE)
         var fileDetailsList = listOf<FileUploadEntity>()
         if(!userId.isNullOrEmpty()) {
             fileDetailsList = if(!fileType.isNullOrEmpty()) {
                 fileDetailsRepository.findAllByUserIdAndFileType(userId, fileType)
             } else {
-                fileDetailsRepository.findAllByUserId(userId)
+                fileDetailsRepository.findAllByUserId(userId, pageable)
             }
         }
         if(!patientId.isNullOrEmpty()) {
             fileDetailsList = if(!fileType.isNullOrEmpty()) {
                 fileDetailsRepository.findAllByPatientIdAndFileType(patientId, fileType)
             } else {
-                fileDetailsRepository.findAllByPatientId(patientId)
+                fileDetailsRepository.findAllByPatientId(patientId, pageable)
             }
         } else if(!bookingId.isNullOrEmpty()) {
             fileDetailsList = if(!fileType.isNullOrEmpty()) {
                 fileDetailsRepository.findAllByBookingIdAndFileType(bookingId, fileType)
             } else {
-                fileDetailsRepository.findAllByBookingId(bookingId)
+                fileDetailsRepository.findAllByBookingId(bookingId, pageable)
             }
         }
 
@@ -111,7 +116,7 @@ class AwsS3Service(
         return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("files" to fileDetailsModelList)))
     }
 
-    fun uploadFileToPrivateBucket(file: MultipartFile): ResponseModel<String> {
+    fun uploadFileToPrivateBucket(file: MultipartFile): ResponseModel<FileUploadModel> {
         return try {
             val metadata = ObjectMetadata()
             metadata.contentLength = file.size
@@ -120,7 +125,8 @@ class AwsS3Service(
             val request = PutObjectRequest(bucketName, fileName, file.inputStream, metadata)
             awsConfig.s3().putObject(request)
             //        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName)
-            ResponseModel(success = true, body = fileName)
+            val fileAccessToken = generatePreSignedUrl(fileName)
+            ResponseModel(success = true, body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken))
         } catch (e: Exception) {
             ResponseModel(success = false)
         }

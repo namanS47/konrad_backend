@@ -117,8 +117,10 @@ class AppController(
         @RequestHeader("patientId") patientId: String?,
         @RequestHeader("bookingId") bookingId: String?,
         @RequestHeader("title") title: String?,
-        @RequestHeader("fileType") fileType: String?
+        @RequestHeader("fileType") fileType: List<String>?,
+        @RequestParam("page") page: Int = 1,
+        @RequestParam("pageSize") pageSize: Int?
     ): ResponseEntity<*> {
-        return awsService.getFileDetails(userId, patientId, bookingId, title, fileType)
+        return awsService.getFileDetails(userId, patientId, bookingId, title, fileType, page, pageSize)
     }
 }

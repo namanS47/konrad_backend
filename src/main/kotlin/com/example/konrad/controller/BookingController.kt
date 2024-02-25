@@ -31,7 +31,7 @@ class BookingController(
         @RequestHeader(name="Authorization") aggregatorToken: String,
         @RequestParam("filter") bookingFilter: String?,
         @RequestParam("page") page: Int = 1,
-        @RequestParam("pageSize") pageSize: Int = 10
+        @RequestParam("pageSize") pageSize: Int?
     ): ResponseEntity<*> {
         return bookingService.getAllBookingAssociatedWithProvider(aggregatorToken, bookingFilter, page, pageSize)
     }

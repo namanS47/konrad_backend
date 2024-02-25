@@ -7,4 +7,5 @@ object ApplicationConstants {
     val FRH_AGGREGATOR_LOCATION = LatLong( 25.1095703617415, 55.1840689035426)
 
     const val REDIS_LOCATION_CACHE_NAME = "location"
+    const val PAGE_SIZE = 10
 }
