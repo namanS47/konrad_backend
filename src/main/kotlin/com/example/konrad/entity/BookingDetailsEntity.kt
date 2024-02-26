@@ -3,6 +3,7 @@ package com.example.konrad.entity
 import com.example.konrad.model.BookingStatus
 import com.example.konrad.model.LatLong
 import com.example.konrad.model.UploadedDocument
+import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.Field
 import java.util.*
@@ -12,6 +13,7 @@ class BookingDetailsEntity (
         @Field(name = "booking_id_serialized")
         var bookingIdSerialized: String? = null,
 
+        @Indexed
         @Field(name = "user_id")
         var userId: String? = null,
 
