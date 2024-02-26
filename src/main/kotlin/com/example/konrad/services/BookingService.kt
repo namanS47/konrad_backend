@@ -6,6 +6,7 @@ import com.example.konrad.model.*
 import com.example.konrad.repositories.AddressDetailsRepository
 import com.example.konrad.repositories.BookingLocationRepository
 import com.example.konrad.repositories.BookingRepository
+import com.example.konrad.repositories.PatientRepository
 import com.example.konrad.utility.AsyncMethods
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -25,19 +26,26 @@ class BookingService(
     @Autowired private val bookingLocationRepository: BookingLocationRepository,
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
     @Autowired private val addressDetailsRepository: AddressDetailsRepository,
+    @Autowired private val patientRepository: PatientRepository,
     @Autowired private val asyncMethods: AsyncMethods,
 ) {
     @Value("\${aggregator-user-name}")
     private lateinit var aggregatorUsername: String
 
     fun addNewBooking(bookingDetailsModel: BookingDetailsModel, userToken: String): ResponseEntity<*> {
-        bookingDetailsModel.userId = jwtTokenUtil.getUsernameFromToken(userToken)
         val newBookingValid = BookingDetailsConvertor.isNewBookingValid(bookingDetailsModel)
+        val patientDetails = patientRepository.findById(bookingDetailsModel.patientId!!)
+        if(!patientDetails.isPresent) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "patient doesn't exist", body = null))
+        }
+
         return if (newBookingValid.success == true) {
             try {
                 //TODO: Add aggregator id here and send notification to aggregator
                 bookingDetailsModel.aggregatorId = aggregatorUsername
 
+                bookingDetailsModel.userId = patientDetails.get().userId
                 bookingDetailsModel.bookingAmount = ApplicationConstants.BOOKING_AMOUNT
 
                 //Add booking status
