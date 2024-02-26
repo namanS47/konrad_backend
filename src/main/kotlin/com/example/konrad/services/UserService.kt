@@ -53,11 +53,46 @@ class UserService(
         }
 
         return try {
-            val patientDetailsEntity = patientRepository.save(PatientDetailsObject.toEntity(patientDetailsModel))
+            val patientDetailsEntity = patientRepository.save(PatientDetailsObject.toEntity(patientDetailsModel, null))
             ResponseEntity.ok(ResponseModel(success = true, body = PatientDetailsObject.toModel(patientDetailsEntity)))
         } catch (e: Exception) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseModel(success = false, reason = e.message, body = null))
+        }
+    }
+
+    fun editPatient(patientDetailsModel: PatientDetailsModel, token: String): ResponseEntity<*> {
+        val username = jwtTokenUtil.getUsernameFromToken(token)
+        if (patientDetailsModel.id.isNullOrEmpty() || username != patientDetailsModel.userId) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ResponseModel(
+                    success = false,
+                    reason = "invalid request", body = null
+                )
+            )
+        }
+        val patientDetailsEntityResponse = patientRepository.findById(patientDetailsModel.id!!)
+        return if (patientDetailsEntityResponse.isPresent) {
+            try {
+                val patientDetailsEntity = patientRepository.save(
+                    PatientDetailsObject.toEntity(
+                        patientDetailsModel,
+                        patientDetailsEntityResponse.get()
+                    )
+                )
+                ResponseEntity.ok(
+                    ResponseModel(
+                        success = true,
+                        body = PatientDetailsObject.toModel(patientDetailsEntity)
+                    )
+                )
+            } catch (e: Exception) {
+                ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ResponseModel(success = false, reason = e.message, body = null))
+            }
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "patient doesn't exist", body = null))
         }
     }
 
@@ -91,7 +126,7 @@ class UserService(
             val patientResponse = patientRepository.findById(patientId)
             if (patientResponse.isPresent) {
                 val patient = patientResponse.get()
-                patient.profilePictureFileName = saveFileResponse.body
+                patient.profilePictureFileName = saveFileResponse.body?.fileBucketPath
                 patientRepository.save(patient)
                 ResponseEntity.ok(ResponseModel(success = true, body = null))
             } else {

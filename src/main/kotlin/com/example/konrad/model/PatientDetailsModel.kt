@@ -20,18 +20,36 @@ data class PatientDetailsModel(
 )
 
 object PatientDetailsObject {
-    fun toEntity(patientDetailsModel: PatientDetailsModel): PatientDetailsEntity {
-        val entity = PatientDetailsEntity()
+    fun toEntity(patientDetailsModel: PatientDetailsModel, patientDetailsEntity: PatientDetailsEntity?): PatientDetailsEntity {
+        val entity = patientDetailsEntity ?: PatientDetailsEntity()
         entity.apply {
-            userId = patientDetailsModel.userId
-            name = patientDetailsModel.name
-            age = patientDetailsModel.age
-            gender = patientDetailsModel.gender
-            email = patientDetailsModel.email
-            mobileNumber = patientDetailsModel.mobileNumber
-            countryCode = patientDetailsModel.countryCode
-            relationShip = patientDetailsModel.relationShip
-            language = patientDetailsModel.language
+            patientDetailsModel.userId?.let {
+                userId = it
+            }
+            patientDetailsModel.name?.let {
+                name = it
+            }
+            patientDetailsModel.age?.let {
+                age = it
+            }
+            patientDetailsModel.gender?.let {
+                gender = it
+            }
+            patientDetailsModel.email?.let {
+                email = it
+            }
+            patientDetailsModel.mobileNumber?.let {
+                mobileNumber = it
+            }
+            patientDetailsModel.countryCode?.let {
+                countryCode = it
+            }
+            patientDetailsModel.relationShip?.let {
+                relationShip = it
+            }
+            patientDetailsModel.language?.let {
+                language = it
+            }
         }
         return entity
     }
@@ -44,6 +62,10 @@ object PatientDetailsObject {
             name = patientDetailsEntity.name
             age = patientDetailsEntity.age
             gender = patientDetailsEntity.gender
+            email = patientDetailsEntity.email
+            mobileNumber = patientDetailsEntity.mobileNumber
+            countryCode = patientDetailsEntity.countryCode
+            relationShip = patientDetailsEntity.relationShip
             language = patientDetailsEntity.language
         }
         return model

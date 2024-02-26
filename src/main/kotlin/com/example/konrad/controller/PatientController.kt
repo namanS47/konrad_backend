@@ -46,6 +46,15 @@ class PatientController(
     }
 
     @RolesAllowed("CUSTOMER")
+    @PutMapping("")
+    fun editPatient(
+        @RequestHeader(name = "Authorization") userToken: String,
+        @RequestBody patientDetailsModel: PatientDetailsModel
+    ): ResponseEntity<*> {
+        return userService.editPatient(patientDetailsModel, userToken)
+    }
+
+    @RolesAllowed("CUSTOMER")
     @GetMapping("")
     fun getAllPatientWithToken(@RequestHeader(name = "Authorization") userToken: String): ResponseEntity<*> {
         return userService.getAllPatientList(userToken)
