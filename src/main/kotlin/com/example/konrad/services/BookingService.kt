@@ -64,28 +64,38 @@ class BookingService(
         }
     }
 
-    fun getAllBookingAssociatedWithProvider(providerToken: String, bookingFilter: String?, page: Int, pageSize: Int?): ResponseEntity<*> {
-        val pageable: Pageable = PageRequest.of(page-1, pageSize ?: ApplicationConstants.PAGE_SIZE)
+    fun getAllBookingAssociatedWithProvider(
+        providerToken: String,
+        bookingFilter: String?,
+        page: Int,
+        pageSize: Int?
+    ): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(page - 1, pageSize ?: ApplicationConstants.PAGE_SIZE)
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
         val filteredStatusList = mutableListOf<String>()
 
         when (bookingFilter) {
             BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
-            BookingFilter.InProcess.name -> filteredStatusList.addAll(listOf(
-                StatusOfBooking.DoctorAssigned.name,
-                StatusOfBooking.DoctorOnTheWay.name,
-                StatusOfBooking.DoctorReached.name,
-                StatusOfBooking.TreatmentStarted.name,
-                StatusOfBooking.VisitCompleted.name,
-            ))
+            BookingFilter.InProcess.name -> filteredStatusList.addAll(
+                listOf(
+                    StatusOfBooking.DoctorAssigned.name,
+                    StatusOfBooking.DoctorOnTheWay.name,
+                    StatusOfBooking.DoctorReached.name,
+                    StatusOfBooking.TreatmentStarted.name,
+                    StatusOfBooking.VisitCompleted.name,
+                )
+            )
+
             BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
             BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
         }
 
-
+        val totalCount =
+            bookingRepository.countByAggregatorIdAndFilter(username, filteredStatusList)
         val bookingsList = bookingRepository.findAllByAggregatorIdAndFilter(username, filteredStatusList, pageable)
             .map { BookingDetailsConvertor.toModel(it) }
-        return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList)))
+        return ResponseEntity.ok()
+            .body(ResponseModel(success = true, body = mapOf("total_count" to totalCount, "bookings" to bookingsList)))
     }
 
     fun confirmBooking(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
