@@ -9,5 +9,6 @@ import java.io.Serializable
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class JwtResponse(
         var token: String? = null,
+        var refreshToken: String? = null,
         var userType: String? = null,
 )

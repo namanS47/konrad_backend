@@ -48,7 +48,7 @@ class JwtUserDetailsService(
     }
 
     // This method returns user details without password
-    fun getUserByUserName(username: String): ResponseModel<UserDetailsEntity> {
+    fun getUserByUsernameOrUserId(username: String): ResponseModel<UserDetailsEntity> {
         val response = userDetailsRepository.findByUsernameOrUserId(username)
         return if(response.isPresent) {
             ResponseModel(success = true, body = response.get())
@@ -78,13 +78,13 @@ class JwtUserDetailsService(
         }
     }
 
-    fun addNewUserAuthenticatedViaOtp(userDetailsModel: UserDetailsModel): ResponseModel<Boolean> {
+    fun addNewUserAuthenticatedViaOtp(userDetailsModel: UserDetailsModel): ResponseModel<UserDetailsEntity> {
         return try {
             userDetailsModel.userId = userDetailsModel.countryCode + userDetailsModel.mobileNumber
             userDetailsModel.roles = listOf(UserRoles.CUSTOMER)
             userDetailsModel.enabled = true
-            userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
-            ResponseModel(success = true)
+            val savedUser =  userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
+            ResponseModel(success = true, body = savedUser)
         } catch (e: Exception) {
             ResponseModel(success = false, reason = e.message)
         }

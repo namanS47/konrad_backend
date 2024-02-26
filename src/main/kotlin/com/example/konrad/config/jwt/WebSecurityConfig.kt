@@ -35,6 +35,7 @@ class WebSecurityConfig() {
             it.requestMatchers("/authenticate",
                 "/authenticate/otp",
                 "/authenticate/otp/request",
+                "/refreshToken",
                 "/").permitAll()
                     .anyRequest().authenticated()
         }.exceptionHandling{exception ->  exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)}

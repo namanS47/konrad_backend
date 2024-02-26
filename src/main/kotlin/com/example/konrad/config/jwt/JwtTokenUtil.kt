@@ -72,6 +72,6 @@ class JwtTokenUtil : Serializable {
 
     companion object {
         private const val serialVersionUID = -2550185165626007488L
-        const val JWT_TOKEN_VALIDITY = (24 * 60 * 60 * 300).toLong()
+        const val JWT_TOKEN_VALIDITY = (1 * 60).toLong() //1 minutes
     }
 }

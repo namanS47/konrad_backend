@@ -1,5 +1,6 @@
 package com.example.konrad.controller
 
+import com.example.konrad.model.jwt_models.RefreshTokenRequestModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.jwtService.AuthenticationService
 
@@ -28,5 +29,10 @@ class JwtAuthenticationController(
     @RequestMapping(value = ["/authenticate/otp"], method = [RequestMethod.POST])
     fun createAuthenticationTokenByOtp(@RequestBody authenticationRequest: UserDetailsModel): ResponseEntity<*> {
         return authenticationService.authenticationViaOtp(authenticationRequest)
+    }
+
+    @RequestMapping(value = ["/refreshToken"], method = [RequestMethod.POST])
+    fun fetchAuthTokenFromRefreshToken(@RequestBody refreshTokenRequestModel: RefreshTokenRequestModel): ResponseEntity<*> {
+        return authenticationService.fetchAuthTokenFromRefreshToken(refreshTokenRequestModel)
     }
 }
