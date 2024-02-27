@@ -35,4 +35,9 @@ class JwtAuthenticationController(
     fun fetchAuthTokenFromRefreshToken(@RequestBody refreshTokenRequestModel: RefreshTokenRequestModel): ResponseEntity<*> {
         return authenticationService.fetchAuthTokenFromRefreshToken(refreshTokenRequestModel)
     }
+
+    @RequestMapping(value = ["/authenticate/logout"], method = [RequestMethod.POST])
+    fun logout(@RequestBody refreshTokenRequestModel: RefreshTokenRequestModel): ResponseEntity<*> {
+        return authenticationService.logout(refreshTokenRequestModel)
+    }
 }

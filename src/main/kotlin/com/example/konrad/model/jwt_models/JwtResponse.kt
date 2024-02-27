@@ -11,4 +11,5 @@ data class JwtResponse(
         var token: String? = null,
         var refreshToken: String? = null,
         var userType: String? = null,
+        var username: String? = null,
 )

@@ -163,6 +163,20 @@ class AuthenticationService(
         }
     }
 
+    fun logout(refreshTokenRequestModel: RefreshTokenRequestModel): ResponseEntity<*> {
+        val refreshTokenEntity = refreshTokenRepository.findByUsernameAndTokenListContaining(
+            refreshTokenRequestModel.userId,
+            refreshTokenRequestModel.token
+        )
+        return if (refreshTokenEntity.isPresent) {
+            refreshTokenRepository.delete(refreshTokenEntity.get())
+            ResponseEntity.ok().body(ResponseModel(success = true, body = null))
+        } else {
+            ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ResponseModel(success = false, reason = "Invalid Token", body = null))
+        }
+    }
+
     fun fetchAuthToken(id: String, refreshTokenEntity: RefreshTokenEntity?): ResponseModel<JwtResponse> {
         val userDetailsResponse = userDetailsService.getUserByUsernameOrUserId(id)
         val refreshToken = refreshTokenEntity ?: createRefreshToken(id)
@@ -170,7 +184,7 @@ class AuthenticationService(
             val userDetails = userDetailsResponse.body!!
             val token = jwtTokenUtil.generateToken(id, userDetails.roles?.get(0) ?: "")
             val userRole = userDetails.roles?.get(0)?.substring(5)
-            ResponseModel(success = true, body = JwtResponse(token, refreshToken.tokenList?.last(), userRole))
+            ResponseModel(success = true, body = JwtResponse(token, refreshToken.tokenList?.last(), userRole, id))
         } else {
             ResponseModel(success = false, reason = userDetailsResponse.reason)
         }
