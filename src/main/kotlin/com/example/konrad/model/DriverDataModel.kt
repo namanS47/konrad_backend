@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DriverDataModel(
+        var id: String? = null,
         var userId: String? = null,
         var username: String? = null,
         var name: String? = null,
@@ -38,6 +39,7 @@ object DriverDataObject {
     fun toModel(driverDataEntity: DriverDataEntity): DriverDataModel {
         val model = DriverDataModel()
         model.apply {
+            id = driverDataEntity.id
             userId = driverDataEntity.userId
             username = driverDataEntity.username
             name = driverDataEntity.name

@@ -12,10 +12,15 @@ data class BookingDetailsModel(
     var userId: String? = null,
     var aggregatorId: String? = null,
     var patientId: String? = null,
+    var patientDetails: PatientDetailsModel? = null,
     var addressId: String? = null,
+    var addressDetails: AddressDetailsModel? = null,
     var doctorId: String? = null,
+    var doctorDetails: DoctorDataModel? = null,
     var driverId: String? = null,
+    var driverDetails: DriverDataModel? = null,
     var nurseId: String? = null,
+    var nurseDetails: DoctorDataModel? = null,
     var requestedExpertise: String? = null,
     var driverLocation: LatLong? = null,
     var bookingAmount: Double? = null,
@@ -141,9 +146,9 @@ object BookingDetailsConvertor {
         if (bookingDetailsModel.addressId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "addressId can not be empty")
         }
-        if (bookingDetailsModel.userId.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "userId can not be empty")
-        }
+//        if (bookingDetailsModel.userId.isNullOrEmpty()) {
+//            return ResponseModel(success = false, reason = "userId can not be empty")
+//        }
         if (!DoctorDataObject.isDoctorExpertiseValid(bookingDetailsModel.requestedExpertise)) {
             return ResponseModel(success = false, reason = "Requested expertise is invalid")
         }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class DoctorDataModel(
+    var id: String? = null,
     var userId: String? = null,
     var username: String? = null,
     var name: String? = null,
@@ -58,6 +59,7 @@ object DoctorDataObject {
     fun toModel(doctorDataEntity: DoctorDataEntity): DoctorDataModel {
         val model = DoctorDataModel()
         model.apply {
+            id = doctorDataEntity.id
             userId = doctorDataEntity.userId
             username = doctorDataEntity.username
             name = doctorDataEntity.name
