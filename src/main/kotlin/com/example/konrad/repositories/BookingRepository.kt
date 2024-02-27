@@ -12,6 +12,8 @@ interface BookingRepository: MongoRepository<BookingDetailsEntity, String> {
     @Query(value = "{ 'aggregator_id' : ?0, 'current_status': {\$in: ?1}}", count = true)
     fun countByAggregatorIdAndFilter(aggregatorId: String, statusList: List<String>): Long
 
+    fun findAllByPatientId(patientId: String): List<BookingDetailsEntity>
+
     fun findAllByDriverId(driverId: String): List<BookingDetailsEntity>
 
     fun findAllByUserId(userId: String): List<BookingDetailsEntity>

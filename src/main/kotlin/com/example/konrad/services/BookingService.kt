@@ -2,6 +2,7 @@ package com.example.konrad.services
 
 import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.constants.ApplicationConstants
+import com.example.konrad.entity.BookingDetailsEntity
 import com.example.konrad.model.*
 import com.example.konrad.repositories.*
 import com.example.konrad.utility.AsyncMethods
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.math.min
 
 
 @Service
@@ -34,7 +36,7 @@ class BookingService(
     fun addNewBooking(bookingDetailsModel: BookingDetailsModel, userToken: String): ResponseEntity<*> {
         val newBookingValid = BookingDetailsConvertor.isNewBookingValid(bookingDetailsModel)
         val patientDetails = patientRepository.findById(bookingDetailsModel.patientId!!)
-        if(!patientDetails.isPresent) {
+        if (!patientDetails.isPresent) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ResponseModel(success = false, reason = "patient doesn't exist", body = null))
         }
@@ -102,41 +104,116 @@ class BookingService(
             bookingRepository.countByAggregatorIdAndFilter(username, filteredStatusList)
         val bookingsList = bookingRepository.findAllByAggregatorIdAndFilter(username, filteredStatusList, pageable)
             .map {
-                val bookingDetailsModel = BookingDetailsConvertor.toModel(it)
-                if(modelList?.contains("patient_id") == true && !it.patientId.isNullOrEmpty()) {
-                    val patientDetails = patientRepository.findById(it.patientId!!)
-                    if(patientDetails.isPresent) {
-                        bookingDetailsModel.patientDetails = PatientDetailsObject.toModel(patientDetails.get())
-                    }
-                }
-                if(modelList?.contains("doctor_id") == true && !it.doctorId.isNullOrEmpty()) {
-                    val doctorDetails = doctorsDataRepository.findById(it.doctorId!!)
-                    if(doctorDetails.isPresent) {
-                        bookingDetailsModel.doctorDetails = DoctorDataObject.toModel(doctorDetails.get())
-                    }
-                }
-                if(modelList?.contains("driver_id") == true && !it.driverId.isNullOrEmpty()) {
-                    val driverDetails = driverDataRepository.findById(it.driverId!!)
-                    if(driverDetails.isPresent) {
-                        bookingDetailsModel.driverDetails = DriverDataObject.toModel(driverDetails.get())
-                    }
-                }
-                if(modelList?.contains("nurse_id") == true && !it.nurseId.isNullOrEmpty()) {
-                    val nurseDetails = doctorsDataRepository.findById(it.nurseId!!)
-                    if(nurseDetails.isPresent) {
-                        bookingDetailsModel.nurseDetails = DoctorDataObject.toModel(nurseDetails.get())
-                    }
-                }
-                if(modelList?.contains("address_id") == true && !it.addressId.isNullOrEmpty()) {
-                    val addressDetails = addressDetailsRepository.findById(it.addressId!!)
-                    if(addressDetails.isPresent) {
-                        bookingDetailsModel.addressDetails = AddressDetailsConvertor.toModel(addressDetails.get())
-                    }
-                }
-                bookingDetailsModel
+                aggregateAllDetailsInBookingDetails(it, modelList)
             }
         return ResponseEntity.ok()
             .body(ResponseModel(success = true, body = mapOf("total_count" to totalCount, "bookings" to bookingsList)))
+    }
+
+    fun getAllBookingsBySearchField(
+        searchText: String, modelList: List<String>?, bookingFilter: String?, page: Int, pageSize: Int?
+    ): ResponseEntity<*> {
+        val bookingDetailsEntityList = mutableListOf<BookingDetailsEntity>()
+
+        //Assuming Search filed is patient name
+        val associatedPatientList = patientRepository.findByStartingWithName(searchText)
+        associatedPatientList.forEach {
+            bookingDetailsEntityList.addAll(bookingRepository.findAllByPatientId(it.id!!))
+        }
+
+        //Assuming SearchField is bookingId
+        val bookingDetailsMatchedWithId = bookingRepository.findById(searchText)
+        if (bookingDetailsMatchedWithId.isPresent) {
+            bookingDetailsEntityList.add(bookingDetailsMatchedWithId.get())
+        }
+
+        val filteredStatusList = mutableListOf<String>()
+
+        when (bookingFilter) {
+            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
+            BookingFilter.InProcess.name -> filteredStatusList.addAll(
+                listOf(
+                    StatusOfBooking.DoctorAssigned.name,
+                    StatusOfBooking.DoctorOnTheWay.name,
+                    StatusOfBooking.DoctorReached.name,
+                    StatusOfBooking.TreatmentStarted.name,
+                    StatusOfBooking.VisitCompleted.name,
+                )
+            )
+
+            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
+            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
+        }
+
+        val filteredBookingEntityList = bookingDetailsEntityList.filter {
+            filteredStatusList.contains(it.currentStatus)
+        }.sortedByDescending {
+            it.bookingStatusList?.first()?.dateTime
+        }
+
+        val startingIndex = (page - 1) * (pageSize ?: ApplicationConstants.PAGE_SIZE)
+        val lastIndex = page * (pageSize ?: ApplicationConstants.PAGE_SIZE)
+
+        val pageableBookingList = mutableListOf<BookingDetailsEntity>()
+        if (startingIndex < filteredBookingEntityList.size) {
+            pageableBookingList.addAll(
+                filteredBookingEntityList.subList(
+                    startingIndex,
+                    min(lastIndex, bookingDetailsEntityList.size)
+                )
+            )
+        }
+
+        val bookingsList = pageableBookingList
+            .map {
+                aggregateAllDetailsInBookingDetails(it, modelList)
+            }
+
+        return ResponseEntity.ok()
+            .body(
+                ResponseModel(
+                    success = true,
+                    body = mapOf("total_count" to filteredBookingEntityList.size, "bookings" to bookingsList)
+                )
+            )
+    }
+
+    fun aggregateAllDetailsInBookingDetails(
+        bookingDetailsEntity: BookingDetailsEntity,
+        modelList: List<String>?
+    ): BookingDetailsModel {
+        val bookingDetailsModel = BookingDetailsConvertor.toModel(bookingDetailsEntity)
+        if (modelList?.contains("patient_id") == true && !bookingDetailsEntity.patientId.isNullOrEmpty()) {
+            val patientDetails = patientRepository.findById(bookingDetailsEntity.patientId!!)
+            if (patientDetails.isPresent) {
+                bookingDetailsModel.patientDetails = PatientDetailsObject.toModel(patientDetails.get())
+            }
+        }
+        if (modelList?.contains("doctor_id") == true && !bookingDetailsEntity.doctorId.isNullOrEmpty()) {
+            val doctorDetails = doctorsDataRepository.findById(bookingDetailsEntity.doctorId!!)
+            if (doctorDetails.isPresent) {
+                bookingDetailsModel.doctorDetails = DoctorDataObject.toModel(doctorDetails.get())
+            }
+        }
+        if (modelList?.contains("driver_id") == true && !bookingDetailsEntity.driverId.isNullOrEmpty()) {
+            val driverDetails = driverDataRepository.findById(bookingDetailsEntity.driverId!!)
+            if (driverDetails.isPresent) {
+                bookingDetailsModel.driverDetails = DriverDataObject.toModel(driverDetails.get())
+            }
+        }
+        if (modelList?.contains("nurse_id") == true && !bookingDetailsEntity.nurseId.isNullOrEmpty()) {
+            val nurseDetails = doctorsDataRepository.findById(bookingDetailsEntity.nurseId!!)
+            if (nurseDetails.isPresent) {
+                bookingDetailsModel.nurseDetails = DoctorDataObject.toModel(nurseDetails.get())
+            }
+        }
+        if (modelList?.contains("address_id") == true && !bookingDetailsEntity.addressId.isNullOrEmpty()) {
+            val addressDetails = addressDetailsRepository.findById(bookingDetailsEntity.addressId!!)
+            if (addressDetails.isPresent) {
+                bookingDetailsModel.addressDetails = AddressDetailsConvertor.toModel(addressDetails.get())
+            }
+        }
+        return bookingDetailsModel
     }
 
     fun confirmBooking(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {

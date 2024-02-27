@@ -17,24 +17,32 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/booking")
 class BookingController(
-        @Autowired private val bookingService: BookingService
+    @Autowired private val bookingService: BookingService
 ) {
     @PostMapping("/new")
-    fun addNewBooking(@RequestHeader(name="Authorization") userToken: String,
-                      @RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
+    fun addNewBooking(
+        @RequestHeader(name = "Authorization") userToken: String,
+        @RequestBody bookingDetailsModel: BookingDetailsModel
+    ): ResponseEntity<*> {
         return bookingService.addNewBooking(bookingDetailsModel, userToken)
     }
 
     @RolesAllowed("SERVICE_PROVIDER")
     @GetMapping("/aggregator")
     fun getAllAggregatorBookings(
-        @RequestHeader(name="Authorization") aggregatorToken: String,
+        @RequestHeader(name = "Authorization") aggregatorToken: String,
         @RequestParam("filter") bookingFilter: String?,
         @RequestParam("page") page: Int = 1,
         @RequestParam("pageSize") pageSize: Int?,
-        @RequestParam("modelList") modelList : List<String>?
+        @RequestParam("modelList") modelList: List<String>?
     ): ResponseEntity<*> {
-        return bookingService.getAllBookingAssociatedWithProvider(aggregatorToken, bookingFilter, modelList, page, pageSize)
+        return bookingService.getAllBookingAssociatedWithProvider(
+            aggregatorToken,
+            bookingFilter,
+            modelList,
+            page,
+            pageSize
+        )
     }
 
     @RolesAllowed("SERVICE_PROVIDER")
@@ -58,9 +66,19 @@ class BookingController(
         bookingService.updateBookingLocation(bookingLocationModel)
     }
 
-    @GetMapping("location")
+    @GetMapping("/location")
     fun fetchBookingLocation(@RequestHeader bookingId: String): ResponseEntity<*> {
         return bookingService.getBookingLocation(bookingId)
 //        return ResponseEntity.ok(bookingService.getBookingLocationRedis(bookingId))
+    }
+
+    @GetMapping("/search")
+    fun fetchAllBookingsBySearch(
+        @RequestHeader searchString: String, @RequestParam("page") page: Int = 1,
+        @RequestParam("filter") bookingFilter: String?,
+        @RequestParam("pageSize") pageSize: Int?,
+        @RequestParam("modelList") modelList: List<String>?
+    ): ResponseEntity<*> {
+        return bookingService.getAllBookingsBySearchField(searchString, modelList, bookingFilter, page, pageSize)
     }
 }
