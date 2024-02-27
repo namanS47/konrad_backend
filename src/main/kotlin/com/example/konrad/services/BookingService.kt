@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.CachePut
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -80,7 +81,7 @@ class BookingService(
         page: Int,
         pageSize: Int?
     ): ResponseEntity<*> {
-        val pageable: Pageable = PageRequest.of(page - 1, pageSize ?: ApplicationConstants.PAGE_SIZE)
+        val pageable: Pageable = PageRequest.of(page - 1, pageSize ?: ApplicationConstants.PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"))
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
         val filteredStatusList = mutableListOf<String>()
 
@@ -148,7 +149,7 @@ class BookingService(
         val filteredBookingEntityList = bookingDetailsEntityList.filter {
             filteredStatusList.contains(it.currentStatus)
         }.sortedByDescending {
-            it.bookingStatusList?.first()?.dateTime
+            it.createdAt
         }
 
         val startingIndex = (page - 1) * (pageSize ?: ApplicationConstants.PAGE_SIZE)
