@@ -45,6 +45,14 @@ class BookingController(
         )
     }
 
+    @GetMapping("/id")
+    fun getBookingById(
+        @RequestHeader(name = "id") id: String,
+        @RequestParam("modelList") modelList: List<String>?
+    ): ResponseEntity<*> {
+        return bookingService.getBookingById(id, modelList)
+    }
+
     @PostMapping("/update")
     fun updateBooking(@RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
         return bookingService.updateBookingDetails(bookingDetailsModel)

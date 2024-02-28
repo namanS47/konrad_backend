@@ -74,6 +74,22 @@ class BookingService(
         }
     }
 
+    fun getBookingById(id: String, modelList: List<String>?): ResponseEntity<*> {
+        val bookingDetailsResponse = bookingRepository.findById(id)
+        return if (bookingDetailsResponse.isPresent) {
+            val aggregatedData = aggregateAllDetailsInBookingDetails(bookingDetailsResponse.get(), modelList)
+
+            ResponseEntity.ok(
+                ResponseModel(
+                    success = true, body = aggregatedData
+                )
+            )
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "booking id doesn't exist", body = null))
+        }
+    }
+
     fun getAllBookingAssociatedWithProvider(
         providerToken: String,
         bookingFilter: String?,
@@ -225,7 +241,7 @@ class BookingService(
         val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
         if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
             val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
-            if(confirmBookingValidResponse.success == true) {
+            if (confirmBookingValidResponse.success == true) {
                 //TODO: send confirm booking notification to patient
                 bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(StatusOfBooking.DoctorAssigned))
             } else {
@@ -249,7 +265,7 @@ class BookingService(
 //            //TODO: send scheduled time update notification to patient
 //        }
 
-        if(bookingDetailsModel.currentStatus != null) {
+        if (bookingDetailsModel.currentStatus != null) {
             val status = BookingDetailsConvertor.getStatusOfBooking(bookingDetailsModel.currentStatus ?: "")
             //TODO: send status update notification to patient
             if (status == StatusOfBooking.Invalid) {
