@@ -81,7 +81,11 @@ class BookingService(
         page: Int,
         pageSize: Int?
     ): ResponseEntity<*> {
-        val pageable: Pageable = PageRequest.of(page - 1, pageSize ?: ApplicationConstants.PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"))
+        val pageable: Pageable = PageRequest.of(
+            page - 1,
+            pageSize ?: ApplicationConstants.PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        )
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
         val filteredStatusList = mutableListOf<String>()
 
@@ -217,53 +221,60 @@ class BookingService(
         return bookingDetailsModel
     }
 
-    fun confirmBooking(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
-        val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
-        return if (confirmBookingValidResponse.success == true) {
-            //TODO: send confirm booking notification to patient
-            val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
-            bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(StatusOfBooking.DoctorAssigned))
-            bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, bookingDetailsEntity.get()))
-            ResponseEntity.ok(ResponseModel(success = true, body = null))
-        } else {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
+    fun updateBookingDetails(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
+        val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
+        if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
+            val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
+            if(confirmBookingValidResponse.success == true) {
+                //TODO: send confirm booking notification to patient
+                bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(StatusOfBooking.DoctorAssigned))
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
+            }
         }
-    }
 
-    fun getBookingAmount(): ResponseEntity<*> {
-        val bookingAmount = ApplicationConstants.BOOKING_AMOUNT
-        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("booking_amount" to bookingAmount)))
-    }
+//        if(!bookingDetailsModel.addressId.isNullOrEmpty()) {
+//            //TODO: send booking address update notification to patient
+//        }
+//
+//        if(!bookingDetailsModel.requestedExpertise.isNullOrEmpty()) {
+//            //TODO: send requested expertise update notification to patient
+//        }
+//
+//        if(bookingDetailsModel.totalAmount != null) {
+//            //TODO: send billing amount notification to patient
+//        }
+//
+//        if(bookingDetailsModel.scheduledTime != null) {
+//            //TODO: send scheduled time update notification to patient
+//        }
 
-    fun updateBookingStatus(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
-        return if (bookingDetailsModel.id.isNullOrEmpty() || bookingDetailsModel.currentStatus.isNullOrEmpty()) {
-            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                ResponseModel(
-                    success = false,
-                    reason = "id and status can not be empty", body = null
-                )
-            )
-        } else {
+        if(bookingDetailsModel.currentStatus != null) {
             val status = BookingDetailsConvertor.getStatusOfBooking(bookingDetailsModel.currentStatus ?: "")
+            //TODO: send status update notification to patient
             if (status == StatusOfBooking.Invalid) {
-                ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     ResponseModel(
                         success = false,
                         reason = "incorrect status", body = null
                     )
                 )
             } else {
-                val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
                 bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(status))
-                bookingRepository.save(
-                    BookingDetailsConvertor.toEntity(
-                        bookingDetailsModel,
-                        bookingDetailsEntity.get()
-                    )
-                )
-                ResponseEntity.ok(ResponseModel(success = true, body = null))
             }
         }
+
+//        if(bookingDetailsModel.doctorNotes != null) {
+//            //TODO: send doctor notes added notification to patient
+//        }
+
+        bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, bookingDetailsEntity.get()))
+        return ResponseEntity.ok(ResponseModel(success = true, body = null))
+    }
+
+    fun getBookingAmount(): ResponseEntity<*> {
+        val bookingAmount = ApplicationConstants.BOOKING_AMOUNT
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("booking_amount" to bookingAmount)))
     }
 
 //    @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.id")

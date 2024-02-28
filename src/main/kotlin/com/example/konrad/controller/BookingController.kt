@@ -45,20 +45,14 @@ class BookingController(
         )
     }
 
-    @RolesAllowed("SERVICE_PROVIDER")
-    @PostMapping("/confirm")
-    fun confirmBooking(@RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
-        return bookingService.confirmBooking(bookingDetailsModel)
+    @PostMapping("/update")
+    fun updateBooking(@RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
+        return bookingService.updateBookingDetails(bookingDetailsModel)
     }
 
     @GetMapping("/amount")
     fun fetchBookingAmount(): ResponseEntity<*> {
         return bookingService.getBookingAmount()
-    }
-
-    @PostMapping("/status")
-    fun updateBookingStatus(@RequestBody bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
-        return bookingService.updateBookingStatus(bookingDetailsModel)
     }
 
     @PostMapping("/location")
