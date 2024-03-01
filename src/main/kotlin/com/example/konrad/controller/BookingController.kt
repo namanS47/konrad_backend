@@ -31,6 +31,7 @@ class BookingController(
     @GetMapping("/aggregator")
     fun getAllAggregatorBookings(
         @RequestHeader(name = "Authorization") aggregatorToken: String,
+        @RequestHeader(name = "search") searchString: String?,
         @RequestParam("filter") bookingFilter: String?,
         @RequestParam("page") page: Int = 1,
         @RequestParam("pageSize") pageSize: Int?,
@@ -38,6 +39,7 @@ class BookingController(
     ): ResponseEntity<*> {
         return bookingService.getAllBookingAssociatedWithProvider(
             aggregatorToken,
+            searchString,
             bookingFilter,
             modelList,
             page,
@@ -72,15 +74,5 @@ class BookingController(
     fun fetchBookingLocation(@RequestHeader bookingId: String): ResponseEntity<*> {
         return bookingService.getBookingLocation(bookingId)
 //        return ResponseEntity.ok(bookingService.getBookingLocationRedis(bookingId))
-    }
-
-    @GetMapping("/search")
-    fun fetchAllBookingsBySearch(
-        @RequestHeader searchString: String, @RequestParam("page") page: Int = 1,
-        @RequestParam("filter") bookingFilter: String?,
-        @RequestParam("pageSize") pageSize: Int?,
-        @RequestParam("modelList") modelList: List<String>?
-    ): ResponseEntity<*> {
-        return bookingService.getAllBookingsBySearchField(searchString, modelList, bookingFilter, page, pageSize)
     }
 }

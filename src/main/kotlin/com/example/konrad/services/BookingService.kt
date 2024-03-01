@@ -92,11 +92,17 @@ class BookingService(
 
     fun getAllBookingAssociatedWithProvider(
         providerToken: String,
+        searchText: String?,
         bookingFilter: String?,
         modelList: List<String>?,
         page: Int,
         pageSize: Int?
     ): ResponseEntity<*> {
+        if(!searchText.isNullOrEmpty()) {
+            return getAllBookingsBySearchField(providerToken, searchText,
+                modelList, bookingFilter, page, pageSize)
+        }
+
         val pageable: Pageable = PageRequest.of(
             page - 1,
             pageSize ?: ApplicationConstants.PAGE_SIZE,
@@ -131,7 +137,7 @@ class BookingService(
             .body(ResponseModel(success = true, body = mapOf("total_count" to totalCount, "bookings" to bookingsList)))
     }
 
-    fun getAllBookingsBySearchField(
+    fun getAllBookingsBySearchField(providerToken: String,
         searchText: String, modelList: List<String>?, bookingFilter: String?, page: Int, pageSize: Int?
     ): ResponseEntity<*> {
         val bookingDetailsEntityList = mutableListOf<BookingDetailsEntity>()
@@ -166,8 +172,10 @@ class BookingService(
             BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
         }
 
+        val username = jwtTokenUtil.getUsernameFromToken(providerToken)
+
         val filteredBookingEntityList = bookingDetailsEntityList.filter {
-            filteredStatusList.contains(it.currentStatus)
+            filteredStatusList.contains(it.currentStatus) && it.aggregatorId == username
         }.sortedByDescending {
             it.createdAt
         }
@@ -180,7 +188,7 @@ class BookingService(
             pageableBookingList.addAll(
                 filteredBookingEntityList.subList(
                     startingIndex,
-                    min(lastIndex, bookingDetailsEntityList.size)
+                    min(lastIndex, filteredBookingEntityList.size)
                 )
             )
         }
