@@ -96,11 +96,12 @@ object PatientDetailsObject {
     private fun isRelationshipTypeValid(relationShip: String?): Boolean {
         return relationShip == PatientRelation.Myself.name ||
                 relationShip == PatientRelation.Spouse.name ||
-                relationShip == PatientRelation.Friend.name ||
+                relationShip == PatientRelation.Parents.name ||
+                relationShip == PatientRelation.Relative.name ||
                 relationShip == PatientRelation.Other.name
     }
 }
 
 enum class PatientRelation {
-    Myself, Spouse, Friend, Other
+    Myself, Spouse, Parents, Relative ,Other
 }

@@ -67,4 +67,7 @@ class BookingDetailsEntity (
 
         @Field(name = "uploaded_document_list")
         var uploadedDocumentList: List<UploadedDocument>? = null,
+
+        @Field(name = "cancellation_reason")
+        var cancellationReason: String? = null
 ): AppEntity()

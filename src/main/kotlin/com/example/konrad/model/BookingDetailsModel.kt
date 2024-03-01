@@ -32,6 +32,7 @@ data class BookingDetailsModel(
     var doctorNotes: List<String>? = null,
     var patientNotes: String? = null,
     var uploadedDocumentList: List<UploadedDocument>? = null,
+    var cancellationReason: String? = null
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -104,6 +105,10 @@ object BookingDetailsConvertor {
             bookingDetailsModel.uploadedDocumentList?.let {
                 uploadedDocumentList = it
             }
+
+            bookingDetailsModel.cancellationReason?.let {
+                cancellationReason = it
+            }
         }
         return entity
     }
@@ -135,6 +140,7 @@ object BookingDetailsConvertor {
             doctorNotes = bookingDetailsEntity.doctorNotes
             patientNotes = bookingDetailsEntity.patientNotes
             uploadedDocumentList = bookingDetailsEntity.uploadedDocumentList
+            cancellationReason = bookingDetailsEntity.cancellationReason
         }
         return model
     }
