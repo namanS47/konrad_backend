@@ -3,6 +3,7 @@ package com.example.konrad.controller
 import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.model.DoctorDataModel
 import com.example.konrad.model.DriverDataModel
+import com.example.konrad.model.FileUploadModel
 import com.example.konrad.model.ServiceProviderDataModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
@@ -109,6 +110,11 @@ class AppController(
         @RequestPart("fileType") fileType: String?
     ): ResponseEntity<*> {
         return awsService.saveFile(file, fileS3Path, userId, patientId, bookingId, title, fileType)
+    }
+
+    @PostMapping("/bulkFiles")
+    fun uploadBulkFiles(@RequestBody fileDetailsList: List<FileUploadModel>): ResponseEntity<*> {
+        return awsService.saveBulkFile(fileDetailsList)
     }
 
     @GetMapping("/files")

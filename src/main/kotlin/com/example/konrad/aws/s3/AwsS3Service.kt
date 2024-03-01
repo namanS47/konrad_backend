@@ -76,6 +76,23 @@ class AwsS3Service(
         return ResponseEntity.ok(ResponseModel(success = true, body = savedFileDetailsModel))
     }
 
+    fun saveBulkFile(fileUploadModelList: List<FileUploadModel>): ResponseEntity<*> {
+        val fileUploadEntityList =  fileUploadModelList.map {
+            if (it.fileType.isNullOrEmpty() ||
+                it.title.isNullOrEmpty() ||
+                !FileUploadModelConvertor.isFileTypeValid(it.fileType!!) ||
+                it.fileBucketPath.isNullOrEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseModel(success = false, reason = "title or fileType is invalid or empty or fileBucketPath is empty", body = null)
+                )
+            }
+            FileUploadModelConvertor.toEntity(it)
+        }
+
+        fileDetailsRepository.saveAll(fileUploadEntityList)
+        return ResponseEntity.ok(ResponseModel(success = true, body = null))
+    }
+
     fun getFileDetails(
         userId: String?,
         patientId: String?,
