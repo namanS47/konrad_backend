@@ -10,4 +10,6 @@ interface DoctorsDataRepository: MongoRepository<DoctorDataEntity, String> {
     @Query("{'\$or':[ {'username': ?0}, {'user_id': ?0} ] }")
     fun findByUsernameOrUserId(id: String): Optional<DoctorDataEntity>
     fun findAllByAssociatedSPIdAndType(spId: String, type: String, pageable: Pageable): List<DoctorDataEntity>
+
+    fun countByAssociatedSPIdAndType(spId: String, type: String): Long
 }

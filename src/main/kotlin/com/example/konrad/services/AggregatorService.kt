@@ -164,11 +164,12 @@ class AggregatorService(
             pageSize ?: ApplicationConstants.PAGE_SIZE
         )
         val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
+        val totalCount = doctorsDataRepository.countByAssociatedSPIdAndType(spUsername, type ?: DoctorDataObject.TYPE_DOCTOR)
         val associatedDoctorsList =
             doctorsDataRepository.findAllByAssociatedSPIdAndType(spUsername, type ?: DoctorDataObject.TYPE_DOCTOR, pageable).map {
                 DoctorDataObject.toModel(it)
             }
-        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("doctor_list" to associatedDoctorsList)))
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("total_count" to totalCount ,"doctor_list" to associatedDoctorsList)))
     }
 
 

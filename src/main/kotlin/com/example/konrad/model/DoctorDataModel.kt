@@ -173,7 +173,7 @@ object DoctorDataObject {
         if(doctorDataModel.username.isNullOrEmpty() && doctorDataModel.userId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "invalid username or userid", body = null)
         }
-        if (!isDoctorExpertiseValid(doctorDataModel.expertise)) {
+        if (doctorDataModel.type == TYPE_DOCTOR && !isDoctorExpertiseValid(doctorDataModel.expertise)) {
             return ResponseModel(success = false, reason = "incorrect expertise")
         }
         if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
