@@ -15,6 +15,7 @@ class FileUploadModel (
     var fileBucketPath: String? = null,
     var title: String? = null,
     var fileType: String? = null,
+    var fileFormat: String? = null,
     var updatedAt: Date? = null,
     var fileUrl: URL? = null,
 )
@@ -30,6 +31,7 @@ object FileUploadModelConvertor {
             fileBucketPath = fileUploadEntity.fileBucketPath
             title = fileUploadEntity.title
             fileType = fileUploadEntity.fileType
+            fileFormat = fileUploadEntity.fileFormat
             updatedAt = fileUploadEntity.modifiedAt
         }
         return model
@@ -44,6 +46,7 @@ object FileUploadModelConvertor {
             fileBucketPath = fileUploadModel.fileBucketPath
             title = fileUploadModel.title
             fileType = fileUploadModel.fileType
+            fileFormat = fileUploadModel.fileFormat
         }
         return entity
     }
@@ -58,6 +61,18 @@ object FileUploadModelConvertor {
                 fileType == FileType.ProfilePicture.name ||
                 fileType == FileType.Other.name
     }
+
+    fun isFileFormatValid(fileFormat: String?): Boolean {
+        return fileFormat == FileFormat.Audio.name ||
+                fileFormat == FileFormat.Video.name ||
+                fileFormat == FileFormat.Image.name ||
+                fileFormat == FileFormat.Document.name ||
+                fileFormat == FileFormat.PDF.name
+    }
+}
+
+enum class FileFormat {
+    Audio, Video, Image, Document, PDF
 }
 
 enum class FileType {

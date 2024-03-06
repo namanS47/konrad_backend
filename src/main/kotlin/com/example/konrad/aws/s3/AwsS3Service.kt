@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest
 import com.example.konrad.config.AmazonConfig
 import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.entity.FileUploadEntity
+import com.example.konrad.model.FileFormat
 import com.example.konrad.model.FileUploadModel
 import com.example.konrad.model.FileUploadModelConvertor
 import com.example.konrad.model.ResponseModel
@@ -39,24 +40,28 @@ class AwsS3Service(
         patientId: String?,
         bookingId: String?,
         title: String?,
-        fileType: String?
+        fileType: String?,
+        fileFormat: String?
     ): ResponseEntity<*> {
-        if (fileType.isNullOrEmpty() || title.isNullOrEmpty() || !FileUploadModelConvertor.isFileTypeValid(fileType)) {
+        if (fileType.isNullOrEmpty() ||
+            title.isNullOrEmpty() ||
+            !FileUploadModelConvertor.isFileTypeValid(fileType) ||
+            !FileUploadModelConvertor.isFileFormatValid(fileFormat)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                ResponseModel(success = false, reason = "title or fileType is invalid or empty", body = null)
+                ResponseModel(success = false, reason = "title, fileType or fileFormat is invalid or empty", body = null)
             )
         }
 
         var fileS3PathMutable = fileS3Path
 
-        if(file != null) {
+        if (file != null) {
             val uploadFileResponse = uploadFileToPrivateBucket(file)
-            if(uploadFileResponse.success == false) {
+            if (uploadFileResponse.success == false) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(uploadFileResponse)
             } else {
                 fileS3PathMutable = uploadFileResponse.body?.fileBucketPath
             }
-        } else if(fileS3Path.isNullOrEmpty()) {
+        } else if (fileS3Path.isNullOrEmpty()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseModel(success = false, reason = "file and bucket path both can't be empty", body = null))
         }
@@ -77,13 +82,19 @@ class AwsS3Service(
     }
 
     fun saveBulkFile(fileUploadModelList: List<FileUploadModel>): ResponseEntity<*> {
-        val fileUploadEntityList =  fileUploadModelList.map {
+        val fileUploadEntityList = fileUploadModelList.map {
             if (it.fileType.isNullOrEmpty() ||
                 it.title.isNullOrEmpty() ||
                 !FileUploadModelConvertor.isFileTypeValid(it.fileType!!) ||
-                it.fileBucketPath.isNullOrEmpty()) {
+                !FileUploadModelConvertor.isFileFormatValid(it.fileFormat) ||
+                it.fileBucketPath.isNullOrEmpty()
+            ) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    ResponseModel(success = false, reason = "title or fileType is invalid or empty or fileBucketPath is empty", body = null)
+                    ResponseModel(
+                        success = false,
+                        reason = "title, fileType or fileFormat is invalid or empty or fileBucketPath is empty",
+                        body = null
+                    )
                 )
             }
             FileUploadModelConvertor.toEntity(it)
@@ -101,30 +112,30 @@ class AwsS3Service(
         fileType: List<String>?,
         page: Int, pageSize: Int?
     ): ResponseEntity<*> {
-        val pageable: Pageable = PageRequest.of(page-1, pageSize ?: ApplicationConstants.PAGE_SIZE)
+        val pageable: Pageable = PageRequest.of(page - 1, pageSize ?: ApplicationConstants.PAGE_SIZE)
         var fileDetailsList = listOf<FileUploadEntity>()
-        if(!userId.isNullOrEmpty()) {
-            fileDetailsList = if(!fileType.isNullOrEmpty()) {
+        if (!userId.isNullOrEmpty()) {
+            fileDetailsList = if (!fileType.isNullOrEmpty()) {
                 fileDetailsRepository.findAllByUserIdAndFileType(userId, fileType)
             } else {
                 fileDetailsRepository.findAllByUserId(userId, pageable)
             }
         }
-        if(!patientId.isNullOrEmpty()) {
-            fileDetailsList = if(!fileType.isNullOrEmpty()) {
+        if (!patientId.isNullOrEmpty()) {
+            fileDetailsList = if (!fileType.isNullOrEmpty()) {
                 fileDetailsRepository.findAllByPatientIdAndFileType(patientId, fileType)
             } else {
                 fileDetailsRepository.findAllByPatientId(patientId, pageable)
             }
-        } else if(!bookingId.isNullOrEmpty()) {
-            fileDetailsList = if(!fileType.isNullOrEmpty()) {
+        } else if (!bookingId.isNullOrEmpty()) {
+            fileDetailsList = if (!fileType.isNullOrEmpty()) {
                 fileDetailsRepository.findAllByBookingIdAndFileType(bookingId, fileType)
             } else {
                 fileDetailsRepository.findAllByBookingId(bookingId, pageable)
             }
         }
 
-        val fileDetailsModelList =  fileDetailsList.map {
+        val fileDetailsModelList = fileDetailsList.map {
             val fileDetailsModel = FileUploadModelConvertor.toModel(it)
             fileDetailsModel.fileUrl = generatePreSignedUrl(it.fileBucketPath)
             fileDetailsModel
@@ -137,13 +148,13 @@ class AwsS3Service(
         return try {
             val metadata = ObjectMetadata()
             metadata.contentLength = file.size
-            var fileName = file.originalFilename?.replace(" ", "")
-            fileName = Instant.now().epochSecond.toString() + fileName
+            val originalFileName = file.originalFilename?.replace(" ", "")
+            val fileName = Instant.now().epochSecond.toString() + originalFileName
             val request = PutObjectRequest(bucketName, fileName, file.inputStream, metadata)
             awsConfig.s3().putObject(request)
             //        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName)
             val fileAccessToken = generatePreSignedUrl(fileName)
-            ResponseModel(success = true, body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken))
+            ResponseModel(success = true, body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken, title = originalFileName))
         } catch (e: Exception) {
             ResponseModel(success = false)
         }

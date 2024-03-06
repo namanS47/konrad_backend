@@ -20,4 +20,6 @@ class FileUploadEntity(
     var title: String? = null,
     @Field("file_type")
     var fileType: String? = null,
+    @Field("file_format")
+    var fileFormat: String? = null,
 ): AppEntity()

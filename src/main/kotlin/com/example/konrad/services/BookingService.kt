@@ -60,7 +60,12 @@ class BookingService(
                 //Add frh location as initial booking location Asynchronously
                 asyncMethods.addBookingLocation(BookingDetailsConvertor.toModel(bookingDetailsEntity))
 
-                ResponseEntity.ok(ResponseModel(success = true, body = null))
+                ResponseEntity.ok(
+                    ResponseModel(
+                        success = true,
+                        body = BookingDetailsConvertor.toModel(bookingDetailsEntity)
+                    )
+                )
             } catch (e: Exception) {
                 ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ResponseModel(
@@ -98,9 +103,11 @@ class BookingService(
         page: Int,
         pageSize: Int?
     ): ResponseEntity<*> {
-        if(!searchText.isNullOrEmpty()) {
-            return getAllBookingsBySearchField(providerToken, searchText,
-                modelList, bookingFilter, page, pageSize)
+        if (!searchText.isNullOrEmpty()) {
+            return getAllBookingsBySearchField(
+                providerToken, searchText,
+                modelList, bookingFilter, page, pageSize
+            )
         }
 
         val pageable: Pageable = PageRequest.of(
@@ -137,7 +144,8 @@ class BookingService(
             .body(ResponseModel(success = true, body = mapOf("total_count" to totalCount, "bookings" to bookingsList)))
     }
 
-    fun getAllBookingsBySearchField(providerToken: String,
+    fun getAllBookingsBySearchField(
+        providerToken: String,
         searchText: String, modelList: List<String>?, bookingFilter: String?, page: Int, pageSize: Int?
     ): ResponseEntity<*> {
         val bookingDetailsEntityList = mutableListOf<BookingDetailsEntity>()

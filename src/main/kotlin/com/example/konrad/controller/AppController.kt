@@ -107,9 +107,10 @@ class AppController(
         @RequestPart("patientId") patientId: String?,
         @RequestPart("bookingId") bookingId: String?,
         @RequestPart("title") title: String?,
-        @RequestPart("fileType") fileType: String?
+        @RequestPart("fileType") fileType: String?,
+        @RequestPart("fileFormat") fileFormat: String?
     ): ResponseEntity<*> {
-        return awsService.saveFile(file, fileS3Path, userId, patientId, bookingId, title, fileType)
+        return awsService.saveFile(file, fileS3Path, userId, patientId, bookingId, title, fileType, fileFormat)
     }
 
     @PostMapping("/bulkFiles")
