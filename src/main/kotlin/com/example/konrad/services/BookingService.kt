@@ -215,6 +215,51 @@ class BookingService(
             )
     }
 
+    fun fetchAllBookingsAssociatedWithUser(
+        userToken: String, modelList: List<String>?,
+        bookingFilter: String?,
+        page: Int,
+        pageSize: Int?
+    ): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(
+            page - 1,
+            pageSize ?: ApplicationConstants.PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        )
+        val username = jwtTokenUtil.getUsernameFromToken(userToken)
+        val filteredStatusList = mutableListOf<String>()
+
+        when (bookingFilter) {
+            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
+            BookingFilter.InProcess.name -> filteredStatusList.addAll(
+                listOf(
+                    StatusOfBooking.DoctorAssigned.name,
+                    StatusOfBooking.DoctorOnTheWay.name,
+                    StatusOfBooking.DoctorReached.name,
+                    StatusOfBooking.TreatmentStarted.name,
+                    StatusOfBooking.VisitCompleted.name,
+                )
+            )
+
+            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
+            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
+        }
+
+        val bookingsList = if(filteredStatusList.isNotEmpty()) {
+            bookingRepository.findAllByUserIdAndFilter(username, filteredStatusList, pageable)
+                .map {
+                    aggregateAllDetailsInBookingDetails(it, modelList)
+                }
+        } else {
+            bookingRepository.findAllByUserId(username, pageable)
+                .map {
+                    aggregateAllDetailsInBookingDetails(it, modelList)
+                }
+        }
+
+        return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList)))
+    }
+
     fun aggregateAllDetailsInBookingDetails(
         bookingDetailsEntity: BookingDetailsEntity,
         modelList: List<String>?
