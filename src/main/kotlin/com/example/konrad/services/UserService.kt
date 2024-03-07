@@ -2,10 +2,14 @@ package com.example.konrad.services
 
 import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.config.jwt.JwtTokenUtil
+import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.model.*
 import com.example.konrad.repositories.BookingRepository
 import com.example.konrad.repositories.PatientRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -15,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile
 class UserService(
     @Autowired private val patientRepository: PatientRepository,
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
-    @Autowired private val bookingRepository: BookingRepository,
     @Autowired private val awsService: AwsS3Service
 ) {
     fun addPatient(patientDetailsModel: PatientDetailsModel, token: String): ResponseEntity<*> {
@@ -136,14 +139,6 @@ class UserService(
         } else {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(saveFileResponse)
         }
-    }
-
-    fun fetchAllBookingsAssociatedWithUser(userToken: String): ResponseEntity<*> {
-        val username = jwtTokenUtil.getUsernameFromToken(userToken)
-        val bookingsList = bookingRepository.findAllByUserId(username).map {
-            BookingDetailsConvertor.toModel(it)
-        }
-        return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList)))
     }
 
     fun fetchUserPatientProfile(userToken: String): ResponseEntity<*> {

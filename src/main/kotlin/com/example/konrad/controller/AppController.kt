@@ -18,12 +18,13 @@ import java.net.URL
 @RestController
 @RequestMapping("/")
 class AppController(
-        @Autowired private val distanceMatrixServices: DistanceMatrixServices,
-        @Autowired private val jwtUserDetailsService: JwtUserDetailsService,
-        @Autowired private val aggregatorService: AggregatorService,
-        @Autowired private val doctorService: DoctorService,
-        @Autowired private val driverService: DriverService,
-        @Autowired private val userService: UserService,
+    @Autowired private val distanceMatrixServices: DistanceMatrixServices,
+    @Autowired private val jwtUserDetailsService: JwtUserDetailsService,
+    @Autowired private val aggregatorService: AggregatorService,
+    @Autowired private val doctorService: DoctorService,
+    @Autowired private val driverService: DriverService,
+    @Autowired private val userService: UserService,
+    @Autowired private val bookingService: BookingService,
     @Autowired private val awsService: AwsS3Service
 ) {
 //    @GetMapping("/")
@@ -47,7 +48,7 @@ class AppController(
     }
 
     @GetMapping("/doctor")
-    fun fetchDoctorDetailsByToken(@RequestHeader(name="Authorization") doctorToken: String): ResponseEntity<*> {
+    fun fetchDoctorDetailsByToken(@RequestHeader(name = "Authorization") doctorToken: String): ResponseEntity<*> {
         return doctorService.getDoctorDetails(doctorToken)
     }
 
@@ -62,7 +63,7 @@ class AppController(
     }
 
     @GetMapping("/driver")
-    fun fetchDriverDetailsByToken(@RequestHeader(name="Authorization") driverToken: String): ResponseEntity<*> {
+    fun fetchDriverDetailsByToken(@RequestHeader(name = "Authorization") driverToken: String): ResponseEntity<*> {
         return driverService.getDriverDetails(driverToken)
     }
 
@@ -78,19 +79,25 @@ class AppController(
 
     @GetMapping("/driver/bookings")
     fun fetchAllBookingsAssociatedWithDriver(
-        @RequestHeader(name="Authorization") driverToken: String): ResponseEntity<*> {
+        @RequestHeader(name = "Authorization") driverToken: String
+    ): ResponseEntity<*> {
         return driverService.fetchAllBookingsAssociatedWithDriver(driverToken)
     }
 
     @GetMapping("/user/bookings")
     fun fetchAllBookingsAssociatedWithUser(
-        @RequestHeader(name="Authorization") driverToken: String): ResponseEntity<*> {
-        return userService.fetchAllBookingsAssociatedWithUser(driverToken)
+        @RequestHeader(name = "Authorization") userToken: String,
+        @RequestParam("filter") bookingFilter: String?,
+        @RequestParam("page") page: Int = 1,
+        @RequestParam("pageSize") pageSize: Int?,
+        @RequestParam("modelList") modelList: List<String>?
+    ): ResponseEntity<*> {
+        return bookingService.fetchAllBookingsAssociatedWithUser(userToken, modelList, bookingFilter, page, pageSize)
     }
 
     @PostMapping("/saveImage")
     fun saveFileToS3(@RequestPart("file") file: MultipartFile): ResponseEntity<*> {
-        val response =  awsService.uploadFileToPrivateBucket(file)
+        val response = awsService.uploadFileToPrivateBucket(file)
         return ResponseEntity.ok(response)
     }
 
