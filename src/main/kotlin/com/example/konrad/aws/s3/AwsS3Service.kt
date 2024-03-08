@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -46,9 +47,14 @@ class AwsS3Service(
         if (fileType.isNullOrEmpty() ||
             title.isNullOrEmpty() ||
             !FileUploadModelConvertor.isFileTypeValid(fileType) ||
-            !FileUploadModelConvertor.isFileFormatValid(fileFormat)) {
+            !FileUploadModelConvertor.isFileFormatValid(fileFormat)
+        ) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                ResponseModel(success = false, reason = "title, fileType or fileFormat is invalid or empty", body = null)
+                ResponseModel(
+                    success = false,
+                    reason = "title, fileType or fileFormat is invalid or empty",
+                    body = null
+                )
             )
         }
 
@@ -112,24 +118,28 @@ class AwsS3Service(
         fileType: List<String>?,
         page: Int, pageSize: Int?
     ): ResponseEntity<*> {
-        val pageable: Pageable = PageRequest.of(page - 1, pageSize ?: ApplicationConstants.PAGE_SIZE)
+        val pageable: Pageable = PageRequest.of(
+            page - 1,
+            pageSize ?: ApplicationConstants.PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, "modifiedAt")
+        )
         var fileDetailsList = listOf<FileUploadEntity>()
         if (!userId.isNullOrEmpty()) {
             fileDetailsList = if (!fileType.isNullOrEmpty()) {
-                fileDetailsRepository.findAllByUserIdAndFileType(userId, fileType)
+                fileDetailsRepository.findAllByUserIdAndFileType(userId, fileType, pageable)
             } else {
                 fileDetailsRepository.findAllByUserId(userId, pageable)
             }
         }
         if (!patientId.isNullOrEmpty()) {
             fileDetailsList = if (!fileType.isNullOrEmpty()) {
-                fileDetailsRepository.findAllByPatientIdAndFileType(patientId, fileType)
+                fileDetailsRepository.findAllByPatientIdAndFileType(patientId, fileType, pageable)
             } else {
                 fileDetailsRepository.findAllByPatientId(patientId, pageable)
             }
         } else if (!bookingId.isNullOrEmpty()) {
             fileDetailsList = if (!fileType.isNullOrEmpty()) {
-                fileDetailsRepository.findAllByBookingIdAndFileType(bookingId, fileType)
+                fileDetailsRepository.findAllByBookingIdAndFileType(bookingId, fileType, pageable)
             } else {
                 fileDetailsRepository.findAllByBookingId(bookingId, pageable)
             }
@@ -154,7 +164,10 @@ class AwsS3Service(
             awsConfig.s3().putObject(request)
             //        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName)
             val fileAccessToken = generatePreSignedUrl(fileName)
-            ResponseModel(success = true, body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken, title = originalFileName))
+            ResponseModel(
+                success = true,
+                body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken, title = originalFileName)
+            )
         } catch (e: Exception) {
             ResponseModel(success = false)
         }
