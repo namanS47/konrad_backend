@@ -1,10 +1,7 @@
 package com.example.konrad.controller
 
 import com.example.konrad.aws.s3.AwsS3Service
-import com.example.konrad.model.DoctorDataModel
-import com.example.konrad.model.DriverDataModel
-import com.example.konrad.model.FileUploadModel
-import com.example.konrad.model.ServiceProviderDataModel
+import com.example.konrad.model.*
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
 import com.example.konrad.services.jwtService.JwtUserDetailsService
@@ -25,7 +22,8 @@ class AppController(
     @Autowired private val driverService: DriverService,
     @Autowired private val userService: UserService,
     @Autowired private val bookingService: BookingService,
-    @Autowired private val awsService: AwsS3Service
+    @Autowired private val awsService: AwsS3Service,
+    @Autowired private val ratingService: RatingService
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -136,5 +134,21 @@ class AppController(
         @RequestParam("pageSize") pageSize: Int?
     ): ResponseEntity<*> {
         return awsService.getFileDetails(userId, patientId, bookingId, title, fileType, page, pageSize)
+    }
+
+    @PostMapping("/rating")
+    fun addRating(@RequestBody ratingModel: UserRatingModel): ResponseEntity<*> {
+        return ratingService.addRating(ratingModel)
+    }
+
+    @GetMapping("/rating")
+    fun getRatings(
+        @RequestParam("bookingId") bookingId: String?,
+        @RequestParam("userId") userId: String?,
+        @RequestParam("page") page: Int = 1,
+        @RequestParam("pageSize") pageSize: Int?,
+        @RequestParam("modelList") modelList: List<String>?
+    ): ResponseEntity<*> {
+        return ratingService.getAllRatings(bookingId, userId, modelList, page, pageSize)
     }
 }
