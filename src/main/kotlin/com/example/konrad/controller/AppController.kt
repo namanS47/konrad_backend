@@ -23,7 +23,8 @@ class AppController(
     @Autowired private val userService: UserService,
     @Autowired private val bookingService: BookingService,
     @Autowired private val awsService: AwsS3Service,
-    @Autowired private val ratingService: RatingService
+    @Autowired private val ratingService: RatingService,
+    @Autowired private val notificationService: NotificationService
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -143,12 +144,17 @@ class AppController(
 
     @GetMapping("/rating")
     fun getRatings(
-        @RequestParam("bookingId") bookingId: String?,
-        @RequestParam("userId") userId: String?,
+        @RequestHeader("bookingId") bookingId: String?,
+        @RequestHeader("userId") userId: String?,
         @RequestParam("page") page: Int = 1,
         @RequestParam("pageSize") pageSize: Int?,
         @RequestParam("modelList") modelList: List<String>?
     ): ResponseEntity<*> {
         return ratingService.getAllRatings(bookingId, userId, modelList, page, pageSize)
+    }
+
+    @PostMapping("/fcmToken")
+    fun saveFcmToken(@RequestBody userDetailsModel: UserDetailsModel): ResponseEntity<*> {
+        return notificationService.saveFcmToken(userDetailsModel.userId, userDetailsModel.fcmToken)
     }
 }

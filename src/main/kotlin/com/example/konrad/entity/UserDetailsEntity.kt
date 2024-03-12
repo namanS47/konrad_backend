@@ -20,4 +20,5 @@ class UserDetailsEntity (
         var mobileNumber: String? = null,
         @Field("country_code")
         var countryCode: String? = null,
+        var fcmToken: String? = null,
 ): AppEntity()

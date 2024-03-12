@@ -17,6 +17,7 @@ data class UserDetailsModel (
         var mobileNumber: String? = null,
         var countryCode: String? = null,
         var otp: String? = null,
+        var fcmToken: String? = null,
 )
 
 object UserDetailsConvertor {
@@ -31,6 +32,7 @@ object UserDetailsConvertor {
             roles = userDetailsModel.roles
             mobileNumber = userDetailsModel.mobileNumber
             countryCode = userDetailsModel.countryCode
+            fcmToken = userDetailsModel.fcmToken
         }
         return entity
     }
