@@ -30,6 +30,7 @@ class BookingService(
     @Autowired private val driverDataRepository: DriverDataRepository,
     @Autowired private val patientRepository: PatientRepository,
     @Autowired private val asyncMethods: AsyncMethods,
+    @Autowired private val notificationService: NotificationService
 ) {
     @Value("\${aggregator-user-name}")
     private lateinit var aggregatorUsername: String
@@ -59,6 +60,13 @@ class BookingService(
 
                 //Add frh location as initial booking location Asynchronously
                 asyncMethods.addBookingLocation(BookingDetailsConvertor.toModel(bookingDetailsEntity))
+                notificationService.sendNotification(
+                    NotificationDetailsModel(
+                        userId = bookingDetailsModel.aggregatorId,
+                        title = "New Booking",
+                        body = "Booking for ${bookingDetailsModel.requestedExpertise}"
+                    )
+                )
 
                 ResponseEntity.ok(
                     ResponseModel(
@@ -245,7 +253,7 @@ class BookingService(
             BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
         }
 
-        val bookingsList = if(filteredStatusList.isNotEmpty()) {
+        val bookingsList = if (filteredStatusList.isNotEmpty()) {
             bookingRepository.findAllByUserIdAndFilter(username, filteredStatusList, pageable)
                 .map {
                     aggregateAllDetailsInBookingDetails(it, modelList)
@@ -303,16 +311,28 @@ class BookingService(
         if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
             val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
             if (confirmBookingValidResponse.success == true) {
-                //TODO: send confirm booking notification to patient
+                notificationService.sendNotification(
+                    NotificationDetailsModel(
+                        userId = bookingDetailsEntity.get().userId,
+                        title = "Booking Confirmed",
+                        body = "We have assigned your Doctor"
+                    )
+                )
                 bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(StatusOfBooking.DoctorAssigned))
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
             }
         }
 
-//        if(!bookingDetailsModel.addressId.isNullOrEmpty()) {
-//            //TODO: send booking address update notification to patient
-//        }
+        if(!bookingDetailsModel.addressId.isNullOrEmpty()) {
+            notificationService.sendNotification(
+                NotificationDetailsModel(
+                    userId = bookingDetailsEntity.get().userId,
+                    title = "Address Updated",
+                    body = "You have changed your booking location"
+                )
+            )
+        }
 //
 //        if(!bookingDetailsModel.requestedExpertise.isNullOrEmpty()) {
 //            //TODO: send requested expertise update notification to patient
@@ -322,13 +342,25 @@ class BookingService(
 //            //TODO: send billing amount notification to patient
 //        }
 //
-//        if(bookingDetailsModel.scheduledTime != null) {
-//            //TODO: send scheduled time update notification to patient
-//        }
+        if(bookingDetailsModel.scheduledTime != null) {
+            notificationService.sendNotification(
+                NotificationDetailsModel(
+                    userId = bookingDetailsEntity.get().userId,
+                    title = "Scheduled Updated",
+                    body = "Doctor will arrive on updated time"
+                )
+            )
+        }
 
         if (bookingDetailsModel.currentStatus != null) {
             val status = BookingDetailsConvertor.getStatusOfBooking(bookingDetailsModel.currentStatus ?: "")
-            //TODO: send status update notification to patient
+            notificationService.sendNotification(
+                NotificationDetailsModel(
+                    userId = bookingDetailsEntity.get().userId,
+                    title = "Booking Status update",
+                    body = "your booking status is ${bookingDetailsModel.currentStatus}"
+                )
+            )
             if (status == StatusOfBooking.Invalid) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                     ResponseModel(
@@ -341,9 +373,15 @@ class BookingService(
             }
         }
 
-//        if(bookingDetailsModel.doctorNotes != null) {
-//            //TODO: send doctor notes added notification to patient
-//        }
+        if(bookingDetailsModel.doctorNotes != null) {
+            notificationService.sendNotification(
+                NotificationDetailsModel(
+                    userId = bookingDetailsEntity.get().userId,
+                    title = "Doctor instructions",
+                    body = "please check instruction added by doctor"
+                )
+            )
+        }
 
         bookingRepository.save(BookingDetailsConvertor.toEntity(bookingDetailsModel, bookingDetailsEntity.get()))
         return ResponseEntity.ok(ResponseModel(success = true, body = null))

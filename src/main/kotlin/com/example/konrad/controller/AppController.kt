@@ -157,4 +157,18 @@ class AppController(
     fun saveFcmToken(@RequestBody userDetailsModel: UserDetailsModel): ResponseEntity<*> {
         return notificationService.saveFcmToken(userDetailsModel.userId, userDetailsModel.fcmToken)
     }
+
+    @GetMapping("/notifications")
+    fun getAllNotificationsByUserId(
+        @RequestHeader("userId") userId: String,
+        @RequestParam("page") page: Int?,
+        @RequestParam("pageSize") pageSize: Int?
+    ): ResponseEntity<*> {
+        return notificationService.getAllNotificationByUserId(userId, page, pageSize)
+    }
+
+    @PostMapping("/notification/test")
+    fun testNotification(@RequestBody notificationDetailsModel: NotificationDetailsModel) {
+        notificationService.sendNotification(notificationDetailsModel)
+    }
 }
