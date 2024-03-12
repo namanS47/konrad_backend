@@ -57,11 +57,18 @@ class RatingService(
                 ResponseEntity.ok(
                     ResponseModel(
                         success = true,
-                        body = aggregateAllDetailsInRatingModel(ratingResponse.get(), modelList)
+                        body = mapOf(
+                            "ratings" to listOf(
+                                aggregateAllDetailsInRatingModel(
+                                    ratingResponse.get(),
+                                    modelList
+                                )
+                            )
+                        )
                     )
                 )
             } else {
-                ResponseEntity.ok(ResponseModel(success = false, body = null))
+                ResponseEntity.ok(ResponseModel(success = false, body = mapOf("ratings" to listOf<UserRatingModel>())))
             }
         }
 
@@ -73,7 +80,7 @@ class RatingService(
 
         val ratingResponseList = userId
             ?.let {
-                userRatingRepository.findAllByUserId(it)
+                userRatingRepository.findAllByUserId(it, pageable)
             }
             ?: run {
                 userRatingRepository.findAll(pageable).toList()
