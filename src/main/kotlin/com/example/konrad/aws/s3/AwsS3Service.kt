@@ -11,6 +11,7 @@ import com.example.konrad.model.FileUploadModel
 import com.example.konrad.model.FileUploadModelConvertor
 import com.example.konrad.model.ResponseModel
 import com.example.konrad.repositories.FileDetailsRepository
+import com.example.konrad.utility.MimeTypeDetector
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
@@ -28,7 +29,8 @@ import java.util.*
 @Service
 class AwsS3Service(
     @Autowired val awsConfig: AmazonConfig,
-    @Autowired val fileDetailsRepository: FileDetailsRepository
+    @Autowired val fileDetailsRepository: FileDetailsRepository,
+    @Autowired private  val mimeTypeDetector: MimeTypeDetector
 ) {
     @Value("\${s3-private_bucket}")
     private lateinit var bucketName: String
@@ -159,7 +161,8 @@ class AwsS3Service(
             metadata.contentLength = file.size
             val originalFileName = file.originalFilename?.replace(" ", "")
             val fileName = Instant.now().epochSecond.toString() + originalFileName
-            metadata.contentType = file.contentType
+            val mimeType = mimeTypeDetector.findMimeType(fileName.substringAfterLast("."))
+            metadata.contentType = mimeType ?: file.contentType
             val request = PutObjectRequest(bucketName, fileName, file.inputStream, metadata)
             awsConfig.s3().putObject(request)
             //        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName)
