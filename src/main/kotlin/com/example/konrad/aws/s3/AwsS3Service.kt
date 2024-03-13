@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest
 import com.example.konrad.config.AmazonConfig
 import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.entity.FileUploadEntity
-import com.example.konrad.model.FileFormat
 import com.example.konrad.model.FileUploadModel
 import com.example.konrad.model.FileUploadModelConvertor
 import com.example.konrad.model.ResponseModel
@@ -160,6 +159,7 @@ class AwsS3Service(
             metadata.contentLength = file.size
             val originalFileName = file.originalFilename?.replace(" ", "")
             val fileName = Instant.now().epochSecond.toString() + originalFileName
+            metadata.contentType = file.contentType
             val request = PutObjectRequest(bucketName, fileName, file.inputStream, metadata)
             awsConfig.s3().putObject(request)
             //        return String.format("https://%s.s3.amazonaws.com/%s", bucketName, fileName)
