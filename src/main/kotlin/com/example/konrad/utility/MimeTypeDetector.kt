@@ -1,9 +1,14 @@
 package com.example.konrad.utility
 
 import jakarta.annotation.PostConstruct
+import jdk.incubator.vector.VectorOperators.LOG
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
+import org.springframework.util.FileCopyUtils
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+
 
 @Component
 class MimeTypeDetector private constructor() {
@@ -29,13 +34,22 @@ class MimeTypeDetector private constructor() {
         val supportedMimeTypes: MutableCollection<Pair<String, String>> = mutableListOf()
         val resource = ClassPathResource("mime-type-catalog.csv")
         assert(resource.exists())
-        resource.file.forEachLine { l ->
-            val tokens = l.split(",")
-            supportedMimeTypes.add(Pair(tokens.first(), tokens.last()))
-        }
-        supportedMimeTypes.forEach { p ->
-            extensionToMimeTypeMapping[p.first] = p.second
-            mimeTypeToExtensionMapping[p.second] = p.first
+
+        try {
+            val catalog = FileCopyUtils.copyToByteArray(resource.inputStream)
+            val catalogString = String(catalog, StandardCharsets.UTF_8)
+            val mimeTypeList = catalogString.split("\n")
+            mimeTypeList.forEach {
+                val tokens = it.split(",")
+                supportedMimeTypes.add(Pair(tokens.first(), tokens.last()))
+            }
+            supportedMimeTypes.forEach { p ->
+                extensionToMimeTypeMapping[p.first] = p.second
+                mimeTypeToExtensionMapping[p.second] = p.first
+            }
+
+        } catch (e: IOException) {
+//            LOG.warn("IOException", e)
         }
     }
 

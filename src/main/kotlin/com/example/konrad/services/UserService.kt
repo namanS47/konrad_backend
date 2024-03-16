@@ -2,14 +2,9 @@ package com.example.konrad.services
 
 import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.config.jwt.JwtTokenUtil
-import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.model.*
-import com.example.konrad.repositories.BookingRepository
 import com.example.konrad.repositories.PatientRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service

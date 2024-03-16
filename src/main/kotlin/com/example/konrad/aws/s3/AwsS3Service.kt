@@ -169,7 +169,7 @@ class AwsS3Service(
             val fileAccessToken = generatePreSignedUrl(fileName)
             ResponseModel(
                 success = true,
-                body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken, title = originalFileName)
+                body = FileUploadModel(fileBucketPath = fileName, fileUrl = fileAccessToken, title = originalFileName?.substringBeforeLast("."))
             )
         } catch (e: Exception) {
             ResponseModel(success = false)
