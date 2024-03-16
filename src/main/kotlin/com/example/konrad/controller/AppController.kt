@@ -2,6 +2,7 @@ package com.example.konrad.controller
 
 import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.model.*
+import com.example.konrad.model.jwt_models.FcmTokenDetailsModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
 import com.example.konrad.services.jwtService.JwtUserDetailsService
@@ -154,8 +155,11 @@ class AppController(
     }
 
     @PostMapping("/fcmToken")
-    fun saveFcmToken(@RequestBody userDetailsModel: UserDetailsModel): ResponseEntity<*> {
-        return notificationService.saveFcmToken(userDetailsModel.userId, userDetailsModel.fcmToken)
+    fun saveFcmToken(
+        @RequestHeader(name = "Authorization") token: String,
+        @RequestBody fcmTokenDetailsModel: FcmTokenDetailsModel
+    ): ResponseEntity<*> {
+        return notificationService.saveFcmToken(token ,fcmTokenDetailsModel.fcmToken!!)
     }
 
     @GetMapping("/notifications")

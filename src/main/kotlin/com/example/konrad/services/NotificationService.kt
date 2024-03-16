@@ -1,7 +1,9 @@
 package com.example.konrad.services
 
 
+import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.constants.ApplicationConstants
+import com.example.konrad.entity.FcmTokenDetailsEntity
 import com.example.konrad.model.NotificationDetailsConvertor
 import com.example.konrad.model.NotificationDetailsModel
 import com.example.konrad.model.ResponseModel
@@ -15,19 +17,21 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class NotificationService(
     @Autowired private val notificationRepository: NotificationRepository,
     @Autowired private val kafkaTemplate: KafkaTemplate<String, NotificationDetailsModel>,
-    @Autowired private val userDetailsRepository: UserDetailsRepository
+    @Autowired private val userDetailsRepository: UserDetailsRepository,
+    @Autowired private val jwtTokenUtil: JwtTokenUtil,
 ) {
     fun sendNotification(notificationDetailsModel: NotificationDetailsModel) {
         val fcmToken = getFcmToken(notificationDetailsModel.userId!!)
-        fcmToken?.let {
-            notificationDetailsModel.fcmToken = it
+        notificationRepository.save(NotificationDetailsConvertor.toEntity(notificationDetailsModel))
+        fcmToken?.map {
+            notificationDetailsModel.fcmToken = it.token
             kafkaTemplate.send("notificationTopic", notificationDetailsModel)
-            notificationRepository.save(NotificationDetailsConvertor.toEntity(notificationDetailsModel))
         }
     }
 
@@ -41,24 +45,41 @@ class NotificationService(
         return ResponseEntity.ok().body(notificationList.map { NotificationDetailsConvertor.toModel(it) })
     }
 
-    fun getFcmToken(userId: String): String? {
+    fun getFcmToken(userId: String): List<FcmTokenDetailsEntity>? {
         val userDetails = userDetailsRepository.findByUsernameOrUserId(userId)
-        if(userDetails.isPresent) {
-            return userDetails.get().fcmToken
+        if (userDetails.isPresent) {
+            return userDetails.get().fcmTokens
         }
         return null
     }
 
-    fun saveFcmToken(userId: String?, fcmToken: String?): ResponseEntity<*> {
-        userId?.let {
-            val userDetailsResponse = userDetailsRepository.findByUsernameOrUserId(it)
-            if(userDetailsResponse.isPresent) {
-                val userDetails = userDetailsResponse.get()
-                userDetails.fcmToken = fcmToken
-                userDetailsRepository.save(userDetails)
-                return ResponseEntity.ok(ResponseModel(success = true, body = null))
+    fun saveFcmToken(authToken: String, fcmToken: String): ResponseEntity<*> {
+        val userId = jwtTokenUtil.getUsernameFromToken(authToken)
+        val userDetailsResponse = userDetailsRepository.findByUsernameOrUserId(userId)
+        if (userDetailsResponse.isPresent) {
+            val userDetails = userDetailsResponse.get()
+
+            userDetails.fcmTokens?.let {
+                var fcmAlreadyExist = false
+
+                it.forEach { fcmDetails ->
+                    if(fcmDetails.token == fcmToken) {
+                        fcmAlreadyExist = true
+                        fcmDetails.modifiedAt = Date()
+                    }
+                }
+                if(!fcmAlreadyExist) {
+                    it.add(FcmTokenDetailsEntity(token = fcmToken, createdAt = Date(), modifiedAt = Date()))
+                }
+            } ?: run {
+                userDetails.fcmTokens =
+                    mutableListOf(FcmTokenDetailsEntity(token = fcmToken, createdAt = Date(), modifiedAt = Date()))
             }
+
+            userDetailsRepository.save(userDetails)
+            return ResponseEntity.ok(ResponseModel(success = true, body = null))
         }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null))
     }
 }
