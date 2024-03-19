@@ -42,3 +42,11 @@ object NotificationDetailsConvertor {
         return model
     }
 }
+
+enum class NotificationDataKeys {
+    Redirect
+}
+
+enum class NotificationKeyRedirectValue {
+    NewBooking
+}

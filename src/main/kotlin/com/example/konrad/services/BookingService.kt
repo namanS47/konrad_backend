@@ -64,7 +64,8 @@ class BookingService(
                     NotificationDetailsModel(
                         userId = bookingDetailsModel.aggregatorId,
                         title = "New Booking",
-                        body = "Booking for ${bookingDetailsModel.requestedExpertise}"
+                        body = "Booking for ${bookingDetailsModel.requestedExpertise}",
+                        data = hashMapOf(NotificationDataKeys.Redirect.name to NotificationKeyRedirectValue.NewBooking.name)
                     )
                 )
 
@@ -318,13 +319,15 @@ class BookingService(
                         body = "We have assigned your Doctor"
                     )
                 )
-                bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(StatusOfBooking.DoctorAssigned))
+                val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
+                asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
+                bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
             }
         }
 
-        if(!bookingDetailsModel.addressId.isNullOrEmpty()) {
+        if (!bookingDetailsModel.addressId.isNullOrEmpty()) {
             notificationService.sendNotification(
                 NotificationDetailsModel(
                     userId = bookingDetailsEntity.get().userId,
@@ -342,7 +345,7 @@ class BookingService(
 //            //TODO: send billing amount notification to patient
 //        }
 //
-        if(bookingDetailsModel.scheduledTime != null) {
+        if (bookingDetailsModel.scheduledTime != null) {
             notificationService.sendNotification(
                 NotificationDetailsModel(
                     userId = bookingDetailsEntity.get().userId,
@@ -369,11 +372,13 @@ class BookingService(
                     )
                 )
             } else {
-                bookingDetailsEntity.get().bookingStatusList?.add(addBookingStatus(status))
+                val latestBookingStatus = addBookingStatus(status)
+                asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
+                bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
             }
         }
 
-        if(bookingDetailsModel.doctorNotes != null) {
+        if (bookingDetailsModel.doctorNotes != null) {
             notificationService.sendNotification(
                 NotificationDetailsModel(
                     userId = bookingDetailsEntity.get().userId,
