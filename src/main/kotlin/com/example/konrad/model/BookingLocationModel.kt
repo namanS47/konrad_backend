@@ -16,6 +16,7 @@ data class BookingLocationModel(
     var lastUpdated: Date? = null,
     var directionResponse: DirectionResponse? = null,
     var patientLocation: LatLong? = null,
+    var bookingStatus: BookingStatus? = null,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -44,6 +45,7 @@ object BookingLocationConvertor {
             bookingLocation = bookingLocationModel.bookingLocation
             directionResponse = bookingLocationModel.directionResponse
             patientLocation = bookingLocationModel.patientLocation
+            bookingStatus = bookingLocationModel.bookingStatus
         }
         return entity
     }
@@ -57,6 +59,7 @@ object BookingLocationConvertor {
             lastUpdated = bookingLocationEntity.modifiedAt
             directionResponse = bookingLocationEntity.directionResponse
             patientLocation = bookingLocationEntity.patientLocation
+            bookingStatus = bookingLocationEntity.bookingStatus
         }
         return model
     }

@@ -4,6 +4,7 @@ import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.model.BookingDetailsModel
 import com.example.konrad.model.BookingLocationConvertor
 import com.example.konrad.model.BookingLocationModel
+import com.example.konrad.model.BookingStatus
 import com.example.konrad.repositories.AddressDetailsRepository
 import com.example.konrad.repositories.BookingLocationRepository
 import com.example.konrad.services.MapsService
@@ -33,7 +34,18 @@ class AsyncMethods(
             bookingId = bookingDetailsModel.id
             patientLocation = addressEntity.get().latLong
             directionResponse = directionResponseFromMaps
+            bookingStatus = bookingDetailsModel.bookingStatusList?.last()
         }
         bookingLocationRepository.save(BookingLocationConvertor.toEntity(bookingLocationModel))
+    }
+
+    @Async
+    fun updateBookingStatusInLocationEntity(status: BookingStatus, id: String) {
+        val bookingLocationResponse = bookingLocationRepository.findByBookingId(id)
+        if(bookingLocationResponse.isPresent) {
+            val bookingLocationDetails = bookingLocationResponse.get()
+            bookingLocationDetails.bookingStatus = status
+            bookingLocationRepository.save(bookingLocationDetails)
+        }
     }
 }

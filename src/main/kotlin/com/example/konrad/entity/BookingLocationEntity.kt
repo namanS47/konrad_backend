@@ -1,5 +1,6 @@
 package com.example.konrad.entity
 
+import com.example.konrad.model.BookingStatus
 import com.example.konrad.model.DirectionResponse
 import com.example.konrad.model.LatLong
 import org.springframework.data.mongodb.core.mapping.Document
@@ -18,4 +19,7 @@ class BookingLocationEntity(
 
         @Field(name = "direction_response")
         var directionResponse: DirectionResponse? = null,
+
+        @Field(name = "booking_status")
+        var bookingStatus: BookingStatus? = null,
 ): AppEntity()
