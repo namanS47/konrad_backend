@@ -42,7 +42,12 @@ class NotificationService(
             Sort.by(Sort.Direction.DESC, "modifiedAt")
         )
         val notificationList = notificationRepository.findByUserId(userId, pageable)
-        return ResponseEntity.ok().body(notificationList.map { NotificationDetailsConvertor.toModel(it) })
+        return ResponseEntity.ok().body(
+            ResponseModel(
+                success = true,
+                body = mapOf("notifications" to notificationList.map { NotificationDetailsConvertor.toModel(it) })
+            )
+        )
     }
 
     fun getFcmToken(userId: String): List<FcmTokenDetailsEntity>? {
@@ -63,12 +68,12 @@ class NotificationService(
                 var fcmAlreadyExist = false
 
                 it.forEach { fcmDetails ->
-                    if(fcmDetails.token == fcmToken) {
+                    if (fcmDetails.token == fcmToken) {
                         fcmAlreadyExist = true
                         fcmDetails.modifiedAt = Date()
                     }
                 }
-                if(!fcmAlreadyExist) {
+                if (!fcmAlreadyExist) {
                     it.add(FcmTokenDetailsEntity(token = fcmToken, createdAt = Date(), modifiedAt = Date()))
                 }
             } ?: run {
@@ -81,5 +86,19 @@ class NotificationService(
         }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null))
+    }
+
+    fun deleteFcmToken(userId: String, fcmToken: String): ResponseEntity<*> {
+        val userDetailsResponse = userDetailsRepository.findByUsernameOrUserId(userId)
+        if(userDetailsResponse.isPresent) {
+            val userDetails = userDetailsResponse.get()
+
+            val fcmIndex = userDetails.fcmTokens?.indexOfFirst { it.token == fcmToken } ?: -1
+            if(fcmIndex != -1) {
+                userDetails.fcmTokens?.removeAt(fcmIndex)
+            }
+            userDetailsRepository.save(userDetails)
+        }
+        return ResponseEntity.ok(ResponseModel(success = true, body = null))
     }
 }

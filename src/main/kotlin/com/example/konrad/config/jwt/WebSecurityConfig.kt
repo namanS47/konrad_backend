@@ -44,6 +44,7 @@ class WebSecurityConfig() {
                 "/authenticate/otp",
                 "/authenticate/otp/request",
                 "/refreshToken",
+                "/fcmToken",
                 "/").permitAll()
                     .anyRequest().authenticated()
         }.exceptionHandling{exception ->  exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)}

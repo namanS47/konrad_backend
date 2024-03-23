@@ -9,6 +9,7 @@ import com.example.konrad.services.jwtService.JwtUserDetailsService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.handler.annotation.Header
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.net.URL
@@ -160,6 +161,11 @@ class AppController(
         @RequestBody fcmTokenDetailsModel: FcmTokenDetailsModel
     ): ResponseEntity<*> {
         return notificationService.saveFcmToken(token ,fcmTokenDetailsModel.fcmToken!!)
+    }
+
+    @DeleteMapping("/fcmToken")
+    fun deleteFcmToken(@RequestHeader userId: String, @RequestHeader token: String): ResponseEntity<*> {
+        return notificationService.deleteFcmToken(userId, token)
     }
 
     @GetMapping("/notifications")
