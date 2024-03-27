@@ -6,10 +6,10 @@ import com.example.konrad.model.jwt_models.FcmTokenDetailsModel
 import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
 import com.example.konrad.services.jwtService.JwtUserDetailsService
+import com.example.konrad.services.stripe.StripePaymentService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.messaging.handler.annotation.Header
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.net.URL
@@ -26,7 +26,8 @@ class AppController(
     @Autowired private val bookingService: BookingService,
     @Autowired private val awsService: AwsS3Service,
     @Autowired private val ratingService: RatingService,
-    @Autowired private val notificationService: NotificationService
+    @Autowired private val notificationService: NotificationService,
+    @Autowired private val stripePaymentService: StripePaymentService
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -180,5 +181,21 @@ class AppController(
     @PostMapping("/notification/test")
     fun testNotification(@RequestBody notificationDetailsModel: NotificationDetailsModel) {
         notificationService.sendNotification(notificationDetailsModel)
+    }
+
+    @PostMapping("/order/create")
+    fun createPaymentIntent(@RequestBody paymentIntent: PaymentOrderModel): ResponseEntity<*> {
+        return stripePaymentService.createPaymentIntent(paymentIntent)
+    }
+
+    @PostMapping("/stripe/webhook")
+    fun stripeWebhookEvents(@RequestBody stripeEvent: String,
+                            @RequestHeader("Stripe-Signature") signature: String): ResponseEntity<*> {
+        return stripePaymentService.paymentEventsListener(stripeEvent, signature)
+    }
+
+    @GetMapping("/order/status")
+    fun getOrderStatus(@RequestHeader intentId: String): ResponseEntity<*> {
+        return stripePaymentService.getPaymentStatus(intentId)
     }
 }
