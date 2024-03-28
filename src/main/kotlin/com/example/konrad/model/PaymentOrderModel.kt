@@ -1,7 +1,10 @@
 package com.example.konrad.model
 
 import com.example.konrad.entity.PaymentOrderEntity
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 class PaymentOrderModel(
     var id: String? = null,
     var intentId: String? = null,
