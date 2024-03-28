@@ -17,6 +17,8 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.stereotype.Service
 import java.time.Instant
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.*
 
 
@@ -27,6 +29,7 @@ class AuthenticationService(
     @Autowired private val userDetailsService: JwtUserDetailsService,
     @Autowired private val refreshTokenRepository: RefreshTokenRepository
 ) {
+    var logger: Logger = LoggerFactory.getLogger(this::class.java)
     fun createRefreshToken(userName: String?): RefreshTokenEntity {
         val refreshToken: RefreshTokenEntity = RefreshTokenEntity()
         refreshToken.apply {
@@ -34,6 +37,7 @@ class AuthenticationService(
             tokenList = mutableListOf(UUID.randomUUID().toString())
             expiryDate = Instant.now().plusMillis(((24 * 60 * 60 * 300).toLong() * 1000)) //10 minutes
         }
+        logger.debug("REFRESH TOKEN CREATED")
 
         return refreshTokenRepository.save(refreshToken)
     }
@@ -48,16 +52,22 @@ class AuthenticationService(
             )
             val authTokenResponse = fetchAuthToken(authenticationRequest.username!!, null)
             if (authTokenResponse.success == true) {
+                logger.debug("USER AUTHENTICATED")
                 ResponseEntity.ok(authTokenResponse)
             } else {
+                logger.error("AUTHENTICATION ERROR")
                 ResponseEntity.status(HttpStatus.BAD_REQUEST).body(authTokenResponse)
             }
         } catch (e: DisabledException) {
+            val responseModel = ResponseModel(success = false, reason = "User is disabled", body = null)
+            logger.debug("AUTHENTICATION ERROR")
             ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseModel(success = false, reason = "User is disabled", body = null))
+                .body(responseModel)
         } catch (e: BadCredentialsException) {
+            val responseModel = ResponseModel(success = false, reason = "invalid credentials", body = null)
+            logger.debug("AUTHENTICATION ERROR")
             ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ResponseModel(success = false, reason = "invalid credentials", body = null))
+                .body(responseModel)
         }
     }
 
@@ -68,6 +78,7 @@ class AuthenticationService(
                 authenticationRequest.countryCode.isNullOrEmpty() ||
                 !StringUtils.isNumeric(authenticationRequest.countryCode!!)
             ) {
+                logger.debug("OTP ERROR: invalid mobile number or country code")
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseModel(
                         success = false,
@@ -76,9 +87,11 @@ class AuthenticationService(
                 )
             } else {
                 //TODO: send otp to user
+                logger.debug("OTP SEND: {}", authenticationRequest.toString())
                 ResponseEntity.ok(ResponseModel(success = true, body = null))
             }
         } catch (e: Exception) {
+            logger.error("OTP Error: internal server error {}", authenticationRequest.toString())
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseModel(success = false, reason = e.message, body = null))
         }
@@ -93,6 +106,7 @@ class AuthenticationService(
                 authenticationRequest.countryCode.isNullOrEmpty() ||
                 !StringUtils.isNumeric(authenticationRequest.countryCode!!)
             ) {
+                logger.debug("OTP ERROR: invalid credentials")
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseModel(
                         success = false,
@@ -107,6 +121,7 @@ class AuthenticationService(
             }
 
             if (!verified) {
+                logger.debug("OTP ERROR: invalid credentials")
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     ResponseModel(
                         success = false,
