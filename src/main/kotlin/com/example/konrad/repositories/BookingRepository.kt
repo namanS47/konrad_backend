@@ -18,7 +18,14 @@ interface BookingRepository : MongoRepository<BookingDetailsEntity, String> {
 
     fun findAllByPatientId(patientId: String): List<BookingDetailsEntity>
 
-    fun findAllByDriverId(driverId: String): List<BookingDetailsEntity>
+
+    fun findAllByDriverId(driverId: String, pageable: Pageable): List<BookingDetailsEntity>
+
+    @Query(value = "{ 'driver_id' : ?0, 'current_status': {\$in: ?1}}")
+    fun findAllByDriverIdAndFilter(
+        driverId: String, statusList: List<String>,
+        pageable: Pageable
+    ): List<BookingDetailsEntity>
 
     @Query(value = "{ 'user_id' : ?0, 'current_status': {\$in: ?1}}")
     fun findAllByUserIdAndFilter(

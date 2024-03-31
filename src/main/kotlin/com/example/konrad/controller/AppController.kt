@@ -81,9 +81,13 @@ class AppController(
 
     @GetMapping("/driver/bookings")
     fun fetchAllBookingsAssociatedWithDriver(
-        @RequestHeader(name = "Authorization") driverToken: String
+        @RequestHeader(name = "Authorization") driverToken: String,
+        @RequestParam("filter") bookingFilter: String?,
+        @RequestParam("page") page: Int = 1,
+        @RequestParam("pageSize") pageSize: Int?,
+        @RequestParam("modelList") modelList: List<String>?
     ): ResponseEntity<*> {
-        return driverService.fetchAllBookingsAssociatedWithDriver(driverToken)
+        return driverService.fetchAllBookingsAssociatedWithDriver(driverToken, modelList, bookingFilter, page, pageSize)
     }
 
     @GetMapping("/user/bookings")
@@ -161,7 +165,7 @@ class AppController(
         @RequestHeader(name = "Authorization") token: String,
         @RequestBody fcmTokenDetailsModel: FcmTokenDetailsModel
     ): ResponseEntity<*> {
-        return notificationService.saveFcmToken(token ,fcmTokenDetailsModel.fcmToken!!)
+        return notificationService.saveFcmToken(token, fcmTokenDetailsModel.fcmToken!!)
     }
 
     @DeleteMapping("/fcmToken")
@@ -189,8 +193,10 @@ class AppController(
     }
 
     @PostMapping("/stripe/webhook")
-    fun stripeWebhookEvents(@RequestBody stripeEvent: String,
-                            @RequestHeader("Stripe-Signature") signature: String): ResponseEntity<*> {
+    fun stripeWebhookEvents(
+        @RequestBody stripeEvent: String,
+        @RequestHeader("Stripe-Signature") signature: String
+    ): ResponseEntity<*> {
         return stripePaymentService.paymentEventsListener(stripeEvent, signature)
     }
 

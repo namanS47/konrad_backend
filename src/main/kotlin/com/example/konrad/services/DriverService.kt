@@ -1,10 +1,14 @@
 package com.example.konrad.services
 
 import com.example.konrad.config.jwt.JwtTokenUtil
+import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.model.*
 import com.example.konrad.repositories.BookingRepository
 import com.example.konrad.repositories.DriverDataRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -14,6 +18,7 @@ class DriverService(
     @Autowired private val driverDataRepository: DriverDataRepository,
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
     @Autowired private val bookingRepository: BookingRepository,
+    @Autowired private val bookingService: BookingService
 ) {
 
     fun updateDriverDetails(driverDataModel: DriverDataModel): ResponseEntity<*> {
@@ -33,6 +38,7 @@ class DriverService(
                 .body(ResponseModel(success = false, reason = "username or userid doesn't exist", body = null))
         }
     }
+
     fun getDriverDetails(driverToken: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(driverToken)
 
@@ -63,12 +69,52 @@ class DriverService(
         }
     }
 
-    fun fetchAllBookingsAssociatedWithDriver(driverToken: String): ResponseEntity<*> {
+    fun fetchAllBookingsAssociatedWithDriver(
+        driverToken: String, modelList: List<String>?,
+        bookingFilter: String?,
+        page: Int,
+        pageSize: Int?
+    ): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(
+            page - 1,
+            pageSize ?: ApplicationConstants.PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+        )
         val username = jwtTokenUtil.getUsernameFromToken(driverToken)
         val driverDetails = getDriverDetailsByUserNameOrUserId(username)
-        val bookingsList = driverDetails.body?.userId?.let { bookingRepository.findAllByDriverId(it) }
-            ?.map { BookingDetailsConvertor.toModel(it) }
-        return ResponseEntity.ok().body(ResponseModel(success = true, body = mapOf("bookings" to bookingsList),
-            reason = driverDetails.reason))
+
+        val filteredStatusList = mutableListOf<String>()
+
+        when (bookingFilter) {
+            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
+            BookingFilter.InProcess.name -> filteredStatusList.addAll(
+                listOf(
+                    StatusOfBooking.DoctorAssigned.name,
+                    StatusOfBooking.DoctorOnTheWay.name,
+                    StatusOfBooking.DoctorReached.name,
+                    StatusOfBooking.TreatmentStarted.name,
+                    StatusOfBooking.VisitCompleted.name,
+                )
+            )
+
+            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
+            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
+        }
+
+        val bookingsList =
+            driverDetails.body?.id?.let {
+                if(filteredStatusList.isNotEmpty()) {
+                    bookingRepository.findAllByDriverIdAndFilter(it, filteredStatusList, pageable)
+                } else {
+                    bookingRepository.findAllByDriverId(it, pageable)
+                }
+            }
+                ?.map { bookingService.aggregateAllDetailsInBookingDetails(it, modelList) }
+        return ResponseEntity.ok().body(
+            ResponseModel(
+                success = true, body = mapOf("bookings" to bookingsList),
+                reason = driverDetails.reason
+            )
+        )
     }
 }
