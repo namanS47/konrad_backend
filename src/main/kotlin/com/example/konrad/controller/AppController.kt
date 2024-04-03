@@ -17,17 +17,16 @@ import java.net.URL
 @RestController
 @RequestMapping("/")
 class AppController(
-    @Autowired private val distanceMatrixServices: DistanceMatrixServices,
     @Autowired private val jwtUserDetailsService: JwtUserDetailsService,
     @Autowired private val aggregatorService: AggregatorService,
     @Autowired private val doctorService: DoctorService,
     @Autowired private val driverService: DriverService,
-    @Autowired private val userService: UserService,
     @Autowired private val bookingService: BookingService,
     @Autowired private val awsService: AwsS3Service,
     @Autowired private val ratingService: RatingService,
     @Autowired private val notificationService: NotificationService,
-    @Autowired private val stripePaymentService: StripePaymentService
+    @Autowired private val stripePaymentService: StripePaymentService,
+    @Autowired private val mapsService: MapsService
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -203,5 +202,17 @@ class AppController(
     @GetMapping("/order/status")
     fun getOrderStatus(@RequestHeader intentId: String): ResponseEntity<*> {
         return stripePaymentService.getPaymentStatus(intentId)
+    }
+
+    @GetMapping("/place/autocomplete")
+    //TODO: Make this api secure: sign the sessionToken with key and verify
+    fun placeAutoCompleteApi(@RequestParam input: String, @RequestParam sessionToken: String): ResponseEntity<*> {
+        return mapsService.autoCompleteApi(input, sessionToken)
+    }
+
+    @GetMapping("/place/details")
+    //TODO: Make this api secure: sign the sessionToken with key and verify
+    fun placeDetailsApi(@RequestParam placeId: String, @RequestParam sessionToken: String): ResponseEntity<*> {
+        return mapsService.placeDetailsApi(placeId, sessionToken)
     }
 }

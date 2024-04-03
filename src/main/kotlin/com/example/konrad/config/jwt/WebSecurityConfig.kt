@@ -46,6 +46,8 @@ class WebSecurityConfig() {
                 "/refreshToken",
                 "/fcmToken",
                 "/stripe/webhook",
+                "/place/autocomplete",
+                "/place/details",
                 "/").permitAll()
                     .anyRequest().authenticated()
         }.exceptionHandling{exception ->  exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)}
