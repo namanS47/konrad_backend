@@ -34,6 +34,7 @@ data class BookingDetailsModel(
     var uploadedDocumentList: List<UploadedDocument>? = null,
     var cancellationReason: String? = null,
     var bookingAmountOrderId: String? = null,
+    var bookingType: String? = null,
 )
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
@@ -114,6 +115,10 @@ object BookingDetailsConvertor {
             bookingDetailsModel.bookingAmountOrderId?.let {
                 bookingAmountOrderId = it
             }
+
+            bookingDetailsModel.bookingType?.let {
+                bookingType = it
+            }
         }
         return entity
     }
@@ -147,20 +152,38 @@ object BookingDetailsConvertor {
             uploadedDocumentList = bookingDetailsEntity.uploadedDocumentList
             cancellationReason = bookingDetailsEntity.cancellationReason
             bookingAmountOrderId = bookingDetailsEntity.bookingAmountOrderId
+            bookingType = bookingDetailsEntity.bookingType
         }
         return model
     }
 
     fun isNewBookingValid(bookingDetailsModel: BookingDetailsModel): ResponseModel<Boolean> {
+        if(bookingDetailsModel.bookingType == BookingType.HomeBooking.name) {
+            return isHomeServiceBookingValid(bookingDetailsModel)
+        }
+        if(bookingDetailsModel.bookingType == BookingType.Teleconsultation.name) {
+            return isTeleconsultationBookingValid(bookingDetailsModel)
+        }
+        return ResponseModel(success = false, reason = "Invalid Booking Type")
+    }
+
+    private fun isHomeServiceBookingValid(bookingDetailsModel: BookingDetailsModel): ResponseModel<Boolean> {
         if (bookingDetailsModel.patientId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "patientId can not be empty")
         }
         if (bookingDetailsModel.addressId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "addressId can not be empty")
         }
-//        if (bookingDetailsModel.userId.isNullOrEmpty()) {
-//            return ResponseModel(success = false, reason = "userId can not be empty")
-//        }
+        if (!DoctorDataObject.isDoctorExpertiseValid(bookingDetailsModel.requestedExpertise)) {
+            return ResponseModel(success = false, reason = "Requested expertise is invalid")
+        }
+        return ResponseModel(success = true)
+    }
+
+    private fun isTeleconsultationBookingValid(bookingDetailsModel: BookingDetailsModel): ResponseModel<Boolean> {
+        if (bookingDetailsModel.patientId.isNullOrEmpty()) {
+            return ResponseModel(success = false, reason = "patientId can not be empty")
+        }
         if (!DoctorDataObject.isDoctorExpertiseValid(bookingDetailsModel.requestedExpertise)) {
             return ResponseModel(success = false, reason = "Requested expertise is invalid")
         }
@@ -198,6 +221,11 @@ object BookingDetailsConvertor {
             }
         }
     }
+
+    private fun isBookingTypeValid(bookingType: String): Boolean {
+        return bookingType == BookingType.HomeBooking.name ||
+                bookingType == BookingType.Teleconsultation.name
+    }
 }
 
 enum class StatusOfBooking {
@@ -206,4 +234,8 @@ enum class StatusOfBooking {
 
 enum class BookingFilter {
     NewBooking, InProcess, Completed, Cancelled
+}
+
+enum class BookingType {
+    HomeBooking, Teleconsultation
 }

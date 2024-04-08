@@ -73,4 +73,7 @@ class BookingDetailsEntity (
 
         @Field(name = "booking_amount_order_id")
         var bookingAmountOrderId: String? = null,
+
+        @Field(name = "booking_type")
+        var bookingType: String? = null,
 ): AppEntity()

@@ -310,20 +310,25 @@ class BookingService(
     fun updateBookingDetails(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
         val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
         if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
-            val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
-            if (confirmBookingValidResponse.success == true) {
-                notificationService.sendNotification(
-                    NotificationDetailsModel(
-                        userId = bookingDetailsEntity.get().userId,
-                        title = "Booking Confirmed",
-                        body = "We have assigned your Doctor"
+            if(bookingDetailsModel.bookingType == BookingType.HomeBooking.name) {
+                val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
+                if (confirmBookingValidResponse.success == true) {
+                    notificationService.sendNotification(
+                        NotificationDetailsModel(
+                            userId = bookingDetailsEntity.get().userId,
+                            title = "Booking Confirmed",
+                            body = "We have assigned your Doctor"
+                        )
                     )
-                )
+                    val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
+                    asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
+                    bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
+                }
+            } else if(bookingDetailsModel.bookingType == BookingType.Teleconsultation.name) {
                 val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
-                asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
                 bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
             }
         }
 
