@@ -26,7 +26,7 @@ class DoctorService(
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(isUpdateDetailsValidResponse)
         }
-        val doctorDataEntityResponse = doctorsDataRepository.findByUsernameOrUserId(doctorDataModel.userId!!)
+        val doctorDataEntityResponse = doctorsDataRepository.findByUsernameOrUserId(doctorDataModel.username!!)
         return if (doctorDataEntityResponse.isPresent) {
             var doctorDataEntity = DoctorDataObject.updateDoctorDetails(doctorDataModel, doctorDataEntityResponse.get())
             doctorDataEntity = doctorsDataRepository.save(doctorDataEntity)

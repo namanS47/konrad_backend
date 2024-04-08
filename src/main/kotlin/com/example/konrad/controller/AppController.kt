@@ -99,7 +99,7 @@ class AppController(
         @RequestParam("pageSize") pageSize: Int?,
         @RequestParam("modelList") modelList: List<String>?
     ): ResponseEntity<*> {
-        return driverService.fetchAllBookingsAssociatedWithDriver(doctorToken, modelList, bookingFilter, page, pageSize)
+        return doctorService.fetchAllBookingsAssociatedWithDoctor(doctorToken, modelList, bookingFilter, page, pageSize)
     }
 
     @GetMapping("/user/bookings")
