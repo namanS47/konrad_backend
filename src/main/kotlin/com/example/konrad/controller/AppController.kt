@@ -7,6 +7,7 @@ import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.services.*
 import com.example.konrad.services.jwtService.JwtUserDetailsService
 import com.example.konrad.services.stripe.StripePaymentService
+import com.example.konrad.services.teleconsultation.TeleconsultationService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
@@ -26,7 +27,8 @@ class AppController(
     @Autowired private val ratingService: RatingService,
     @Autowired private val notificationService: NotificationService,
     @Autowired private val stripePaymentService: StripePaymentService,
-    @Autowired private val mapsService: MapsService
+    @Autowired private val mapsService: MapsService,
+    @Autowired private val teleconsultationService: TeleconsultationService
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -214,5 +216,11 @@ class AppController(
     //TODO: Make this api secure: sign the sessionToken with key and verify
     fun placeDetailsApi(@RequestParam placeId: String, @RequestParam sessionToken: String): ResponseEntity<*> {
         return mapsService.placeDetailsApi(placeId, sessionToken)
+    }
+
+    @GetMapping("/zoom/token")
+    fun getZoomSessionToken(@RequestHeader(name = "Authorization") token: String,
+                            @RequestHeader sessionName: String) : ResponseEntity<*> {
+        return teleconsultationService.createZoomJwtToken(token, sessionName)
     }
 }
