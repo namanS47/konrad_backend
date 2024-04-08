@@ -142,6 +142,9 @@ object DoctorDataObject {
         if (doctorDataModel.type != TYPE_DOCTOR && doctorDataModel.type != TYPE_NURSE) {
             return ResponseModel(success = false, reason = "incorrect type")
         }
+        if (doctorDataModel.type == TYPE_DOCTOR && !isDoctorExpertiseValid(doctorDataModel.expertise)) {
+            return ResponseModel(success = false, reason = "incorrect expertise")
+        }
 
         return ResponseModel(success = true, body = null)
     }
