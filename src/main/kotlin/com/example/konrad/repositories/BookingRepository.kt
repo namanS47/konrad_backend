@@ -27,6 +27,14 @@ interface BookingRepository : MongoRepository<BookingDetailsEntity, String> {
         pageable: Pageable
     ): List<BookingDetailsEntity>
 
+    fun findAllByDoctorId(doctorId: String, pageable: Pageable): List<BookingDetailsEntity>
+
+    @Query(value = "{ 'doctor_id' : ?0, 'current_status': {\$in: ?1}}")
+    fun findAllByDoctorIdAndFilter(
+        doctorId: String, statusList: List<String>,
+        pageable: Pageable
+    ): List<BookingDetailsEntity>
+
     @Query(value = "{ 'user_id' : ?0, 'current_status': {\$in: ?1}}")
     fun findAllByUserIdAndFilter(
         userId: String,

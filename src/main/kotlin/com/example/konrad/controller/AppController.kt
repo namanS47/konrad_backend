@@ -91,6 +91,17 @@ class AppController(
         return driverService.fetchAllBookingsAssociatedWithDriver(driverToken, modelList, bookingFilter, page, pageSize)
     }
 
+    @GetMapping("/doctor/bookings")
+    fun fetchAllBookingsAssociatedWithDoctor(
+        @RequestHeader(name = "Authorization") doctorToken: String,
+        @RequestParam("filter") bookingFilter: String?,
+        @RequestParam("page") page: Int = 1,
+        @RequestParam("pageSize") pageSize: Int?,
+        @RequestParam("modelList") modelList: List<String>?
+    ): ResponseEntity<*> {
+        return driverService.fetchAllBookingsAssociatedWithDriver(doctorToken, modelList, bookingFilter, page, pageSize)
+    }
+
     @GetMapping("/user/bookings")
     fun fetchAllBookingsAssociatedWithUser(
         @RequestHeader(name = "Authorization") userToken: String,
