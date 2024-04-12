@@ -22,4 +22,6 @@ class FileUploadEntity(
     var fileType: String? = null,
     @Field("file_format")
     var fileFormat: String? = null,
+    @Field("id_proof_type")
+    var idProofType: String? = null,
 ): AppEntity()

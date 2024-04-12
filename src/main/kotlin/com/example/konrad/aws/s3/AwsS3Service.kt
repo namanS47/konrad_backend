@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest
 import com.example.konrad.config.AmazonConfig
 import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.entity.FileUploadEntity
+import com.example.konrad.model.FileType
 import com.example.konrad.model.FileUploadModel
 import com.example.konrad.model.FileUploadModelConvertor
 import com.example.konrad.model.ResponseModel
@@ -100,6 +101,15 @@ class AwsS3Service(
                     ResponseModel(
                         success = false,
                         reason = "title, fileType or fileFormat is invalid or empty or fileBucketPath is empty",
+                        body = null
+                    )
+                )
+            }
+            if(it.fileType == FileType.ValidId.name && !FileUploadModelConvertor.isIdProofValid(it.idProofType)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    ResponseModel(
+                        success = false,
+                        reason = "invalid idProof type",
                         body = null
                     )
                 )

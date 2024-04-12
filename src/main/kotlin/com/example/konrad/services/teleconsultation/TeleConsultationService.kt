@@ -40,6 +40,6 @@ class TeleconsultationService(
             .setExpiration(Date(System.currentTimeMillis() + 60 * 60 * 24 * 1 * 1000))
             .signWith(SignatureAlgorithm.HS256,Base64.getEncoder().encodeToString(zoomSdkSecret.toByteArray()))
             .setHeader(headerMap).compact()
-        return ResponseEntity.ok(ResponseModel(success = true, body = generatedToken))
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("token" to generatedToken)))
     }
 }

@@ -18,6 +18,7 @@ class FileUploadModel (
     var fileFormat: String? = null,
     var updatedAt: Date? = null,
     var fileUrl: URL? = null,
+    var idProofType: String? = null,
 )
 
 object FileUploadModelConvertor {
@@ -33,6 +34,7 @@ object FileUploadModelConvertor {
             fileType = fileUploadEntity.fileType
             fileFormat = fileUploadEntity.fileFormat
             updatedAt = fileUploadEntity.modifiedAt
+            idProofType = fileUploadEntity.idProofType
         }
         return model
     }
@@ -47,6 +49,7 @@ object FileUploadModelConvertor {
             title = fileUploadModel.title
             fileType = fileUploadModel.fileType
             fileFormat = fileUploadModel.fileFormat
+            idProofType = fileUploadModel.idProofType
         }
         return entity
     }
@@ -69,6 +72,12 @@ object FileUploadModelConvertor {
                 fileFormat == FileFormat.Document.name ||
                 fileFormat == FileFormat.PDF.name
     }
+
+    fun isIdProofValid(idProof: String?): Boolean {
+        return idProof == IdProofs.EmiratesIdFront.name ||
+                idProof == IdProofs.EmiratesIdBack.name ||
+                idProof == IdProofs.Passport.name
+    }
 }
 
 enum class FileFormat {
@@ -77,4 +86,8 @@ enum class FileFormat {
 
 enum class FileType {
     FinalReport, Invoice, LabTest, Medication, PatientInstruction, ValidId, ProfilePicture, Other
+}
+
+enum class IdProofs {
+    Passport, EmiratesIdFront, EmiratesIdBack
 }
