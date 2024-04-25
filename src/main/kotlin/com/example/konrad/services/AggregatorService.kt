@@ -83,6 +83,16 @@ class AggregatorService(
         }
     }
 
+    fun createDoctorOrNurse(doctorDataModel: DoctorDataModel, spToken: String): ResponseEntity<*> {
+        if (doctorDataModel.type == DoctorDataObject.TYPE_NURSE) {
+            return createDoctorWithoutCredentials(doctorDataModel, spToken)
+        } else if (doctorDataModel.type == DoctorDataObject.TYPE_DOCTOR) {
+            return createDoctorWithCredentials(doctorDataModel, spToken)
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ResponseModel(success = false, reason = "incorrect type", body = null))
+    }
+
     fun createDoctorWithCredentials(doctorDataModel: DoctorDataModel, spToken: String): ResponseEntity<*> {
         val isDoctorValidResponse = DoctorDataObject.isDoctorDetailsValidWithCredentials(doctorDataModel)
 
@@ -98,6 +108,8 @@ class AggregatorService(
 
         val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
         doctorDataModel.associatedSPId = spUsername
+        val randomId = StringUtils.generateUUID()
+        doctorDataModel.userId = randomId
 
         try {
             val userDetailsModel = UserDetailsModel()
@@ -164,12 +176,22 @@ class AggregatorService(
             pageSize ?: ApplicationConstants.PAGE_SIZE
         )
         val spUsername = jwtTokenUtil.getUsernameFromToken(spToken)
-        val totalCount = doctorsDataRepository.countByAssociatedSPIdAndType(spUsername, type ?: DoctorDataObject.TYPE_DOCTOR)
+        val totalCount =
+            doctorsDataRepository.countByAssociatedSPIdAndType(spUsername, type ?: DoctorDataObject.TYPE_DOCTOR)
         val associatedDoctorsList =
-            doctorsDataRepository.findAllByAssociatedSPIdAndType(spUsername, type ?: DoctorDataObject.TYPE_DOCTOR, pageable).map {
+            doctorsDataRepository.findAllByAssociatedSPIdAndType(
+                spUsername,
+                type ?: DoctorDataObject.TYPE_DOCTOR,
+                pageable
+            ).map {
                 DoctorDataObject.toModel(it)
             }
-        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("total_count" to totalCount ,"doctor_list" to associatedDoctorsList)))
+        return ResponseEntity.ok(
+            ResponseModel(
+                success = true,
+                body = mapOf("total_count" to totalCount, "doctor_list" to associatedDoctorsList)
+            )
+        )
     }
 
 

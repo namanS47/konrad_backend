@@ -25,7 +25,7 @@ class AggregatorController(
         @RequestHeader(name = "Authorization") spToken: String,
         @RequestBody doctorDataModel: DoctorDataModel
     ): ResponseEntity<*> {
-        return aggregatorService.createDoctorWithCredentials(doctorDataModel, spToken)
+        return aggregatorService.createDoctorOrNurse(doctorDataModel, spToken)
     }
 
     @RolesAllowed("SERVICE_PROVIDER")

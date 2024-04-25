@@ -310,7 +310,7 @@ class BookingService(
     fun updateBookingDetails(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
         val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
         if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
-            if(bookingDetailsModel.bookingType == BookingType.HomeBooking.name) {
+            if(bookingDetailsEntity.get().bookingType == BookingType.HomeBooking.name) {
                 val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
                 if (confirmBookingValidResponse.success == true) {
                     notificationService.sendNotification(
@@ -326,7 +326,7 @@ class BookingService(
                 } else {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
                 }
-            } else if(bookingDetailsModel.bookingType == BookingType.Teleconsultation.name) {
+            } else if(bookingDetailsEntity.get().bookingType == BookingType.Teleconsultation.name) {
                 val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
                 bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
             }
