@@ -130,7 +130,7 @@ object BookingDetailsConvertor {
             bookingDetailsEntity.bookingIdSerialized?.let {
                 bookingIdSerialized = it
             }.run {
-                bookingIdSerialized = bookingDetailsEntity.id!!.substring(bookingDetailsEntity.id!!.length - 10)
+                bookingIdSerialized = bookingDetailsEntity.id!!
             }
             userId = bookingDetailsEntity.userId
             aggregatorId = bookingDetailsEntity.aggregatorId
