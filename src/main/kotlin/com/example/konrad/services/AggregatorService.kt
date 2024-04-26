@@ -11,16 +11,15 @@ import com.example.konrad.repositories.DoctorsDataRepository
 import com.example.konrad.repositories.DriverDataRepository
 import com.example.konrad.repositories.ServiceProviderRepository
 import com.example.konrad.repositories.UserDetailsRepository
+import com.example.konrad.services.jwtService.JwtUserDetailsService
 import com.example.konrad.utility.StringUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import java.lang.Exception
 
 @Service
 class AggregatorService(
@@ -29,7 +28,8 @@ class AggregatorService(
     @Autowired private val serviceProviderRepository: ServiceProviderRepository,
     @Autowired private val userDetailsRepository: UserDetailsRepository,
     @Autowired private val passwordEncoder: PasswordEncoder,
-    @Autowired private val jwtTokenUtil: JwtTokenUtil
+    @Autowired private val jwtTokenUtil: JwtTokenUtil,
+    @Autowired private val userDetailsService: JwtUserDetailsService,
 ) {
 
     fun addServiceProvider(serviceProviderDataModel: ServiceProviderDataModel): ResponseEntity<*> {
@@ -227,6 +227,27 @@ class AggregatorService(
         } catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ResponseModel(success = false, reason = "Something went wrong", body = null))
+        }
+    }
+
+    fun getUserIdByMobileNumber(userDetailsModel: UserDetailsModel): ResponseEntity<*> {
+        try {
+            val userDetailsResponse = userDetailsService.getUserByMobileNumber(
+                userDetailsModel.mobileNumber!!, userDetailsModel.countryCode!!
+            )
+
+            return if (userDetailsResponse.success == true) {
+                ResponseEntity.ok(ResponseModel(success = true, body = userDetailsResponse.body?.userId))
+            } else {
+                val response = userDetailsService.addNewUserAuthenticatedViaOtp(userDetailsModel)
+                if (response.success == true) {
+                    ResponseEntity.ok(ResponseModel(success = true, body = response.body?.userId))
+                } else {
+                    ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response)
+                }
+            }
+        } catch (e: Exception) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null))
         }
     }
 
