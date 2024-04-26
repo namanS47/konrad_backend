@@ -96,8 +96,8 @@ class UserService(
         }
     }
 
-    fun getAllPatientList(userToken: String): ResponseEntity<*> {
-        val username = jwtTokenUtil.getUsernameFromToken(userToken)
+    fun getAllPatientList(userToken: String, userId: String?): ResponseEntity<*> {
+        val username = userId ?: jwtTokenUtil.getUsernameFromToken(userToken)
         val patientList = patientRepository.findAllByUserId(username)
             .map {
                 PatientDetailsObject.toModel(it)

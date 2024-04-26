@@ -54,10 +54,12 @@ class PatientController(
         return userService.editPatient(patientDetailsModel, userToken)
     }
 
-    @RolesAllowed("CUSTOMER")
     @GetMapping("")
-    fun getAllPatientWithToken(@RequestHeader(name = "Authorization") userToken: String): ResponseEntity<*> {
-        return userService.getAllPatientList(userToken)
+    fun getAllPatientAssociatedWithUser(
+        @RequestHeader(name = "Authorization") userToken: String,
+        @RequestHeader userId: String?
+    ): ResponseEntity<*> {
+        return userService.getAllPatientList(userToken, userId)
     }
 
     @GetMapping("/id")
