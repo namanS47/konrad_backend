@@ -20,9 +20,10 @@ class PatientController(
     @PostMapping("/address")
     fun savePatientAddress(
         @RequestHeader(name = "Authorization") userToken: String,
+        @RequestHeader userId: String?,
         @RequestBody addressDetailsModel: AddressDetailsModel
     ): ResponseEntity<*> {
-        return addressService.saveAddress(addressDetailsModel, userToken)
+        return addressService.saveAddress(addressDetailsModel, userToken, userId)
     }
 
     @GetMapping("/address/id")

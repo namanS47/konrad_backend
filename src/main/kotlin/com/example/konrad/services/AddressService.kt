@@ -15,13 +15,13 @@ class AddressService(
         @Autowired private val addressDetailsRepository: AddressDetailsRepository,
         @Autowired private val jwtTokenUtil: JwtTokenUtil
 ) {
-    fun saveAddress(addressDetailsModel: AddressDetailsModel, token: String): ResponseEntity<*> {
+    fun saveAddress(addressDetailsModel: AddressDetailsModel, token: String, userId: String?): ResponseEntity<*> {
         if(!addressDetailsModel.id.isNullOrEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false,
                     reason = "please remove id", body = null))
         }
 
-        val username = jwtTokenUtil.getUsernameFromToken(token)
+        val username = userId ?: jwtTokenUtil.getUsernameFromToken(token)
         addressDetailsModel.userId = username
         val isAddressValidResponse = AddressDetailsConvertor.checkAddressValid(addressDetailsModel)
         if (isAddressValidResponse.success != true) {
