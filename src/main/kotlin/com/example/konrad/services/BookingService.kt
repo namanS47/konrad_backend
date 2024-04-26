@@ -264,21 +264,31 @@ class BookingService(
         val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
         if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
             if(bookingDetailsEntity.get().bookingType == BookingType.HomeBooking.name) {
-                val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
-                if (confirmBookingValidResponse.success == true) {
-                    notificationService.sendNotification(
-                        NotificationDetailsModel(
-                            userId = bookingDetailsEntity.get().userId,
-                            title = "Booking Confirmed",
-                            body = "We have assigned your Doctor"
-                        )
+                notificationService.sendNotification(
+                    NotificationDetailsModel(
+                        userId = bookingDetailsEntity.get().userId,
+                        title = "Booking Confirmed",
+                        body = "We have assigned your Doctor"
                     )
-                    val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
-                    asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
-                    bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
-                } else {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
-                }
+                )
+                val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
+                asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
+                bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
+//                val confirmBookingValidResponse = BookingDetailsConvertor.isConfirmBookingRequestValid(bookingDetailsModel)
+//                if (confirmBookingValidResponse.success == true) {
+//                    notificationService.sendNotification(
+//                        NotificationDetailsModel(
+//                            userId = bookingDetailsEntity.get().userId,
+//                            title = "Booking Confirmed",
+//                            body = "We have assigned your Doctor"
+//                        )
+//                    )
+//                    val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
+//                    asyncMethods.updateBookingStatusInLocationEntity(latestBookingStatus, bookingDetailsModel.id!!)
+//                    bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
+//                } else {
+//                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
+//                }
             } else if(bookingDetailsEntity.get().bookingType == BookingType.Teleconsultation.name) {
                 val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
                 bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
