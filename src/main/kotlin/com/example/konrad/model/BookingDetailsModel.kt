@@ -240,6 +240,8 @@ object BookingDetailsConvertor {
                     StatusOfBooking.DoctorReached.name,
                     StatusOfBooking.TreatmentStarted.name,
                     StatusOfBooking.VisitCompleted.name,
+                    StatusOfBooking.ConsultationStarted.name,
+                    StatusOfBooking.ConsultationCompleted.name
                 )
             )
 
