@@ -81,23 +81,7 @@ class DoctorService(
         val username = jwtTokenUtil.getUsernameFromToken(doctorToken)
         val doctorDetails = getDoctorDetailsByUserNameOrUserId(username)
 
-        val filteredStatusList = mutableListOf<String>()
-
-        when (bookingFilter) {
-            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
-            BookingFilter.InProcess.name -> filteredStatusList.addAll(
-                listOf(
-                    StatusOfBooking.DoctorAssigned.name,
-                    StatusOfBooking.DoctorOnTheWay.name,
-                    StatusOfBooking.DoctorReached.name,
-                    StatusOfBooking.TreatmentStarted.name,
-                    StatusOfBooking.VisitCompleted.name,
-                )
-            )
-
-            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
-            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
-        }
+        val filteredStatusList = BookingDetailsConvertor.getBookingStatusList(bookingFilter)
 
         val bookingsList =
             doctorDetails.body?.id?.let {

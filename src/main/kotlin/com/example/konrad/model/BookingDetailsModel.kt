@@ -215,6 +215,8 @@ object BookingDetailsConvertor {
             "TreatmentStarted" -> StatusOfBooking.TreatmentStarted
             "VisitCompleted" -> StatusOfBooking.VisitCompleted
             "TreatmentClosed" -> StatusOfBooking.TreatmentClosed
+            "ConsultationStarted" -> StatusOfBooking.ConsultationStarted
+            "ConsultationCompleted" -> StatusOfBooking.ConsultationCompleted
             "Cancelled" -> StatusOfBooking.Cancelled
             else -> {
                 StatusOfBooking.Invalid
@@ -226,10 +228,31 @@ object BookingDetailsConvertor {
         return bookingType == BookingType.HomeBooking.name ||
                 bookingType == BookingType.Teleconsultation.name
     }
+
+    fun getBookingStatusList(bookingFilter: String?): List<String> {
+        val filteredStatusList = mutableListOf<String>()
+        when (bookingFilter) {
+            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
+            BookingFilter.InProcess.name -> filteredStatusList.addAll(
+                listOf(
+                    StatusOfBooking.DoctorAssigned.name,
+                    StatusOfBooking.DoctorOnTheWay.name,
+                    StatusOfBooking.DoctorReached.name,
+                    StatusOfBooking.TreatmentStarted.name,
+                    StatusOfBooking.VisitCompleted.name,
+                )
+            )
+
+            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
+            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
+        }
+        return filteredStatusList.toList()
+    }
 }
 
 enum class StatusOfBooking {
-    BookingConfirmed, DoctorAssigned, DoctorOnTheWay, DoctorReached, TreatmentStarted, VisitCompleted, TreatmentClosed, Cancelled, Invalid
+    BookingConfirmed, DoctorAssigned, DoctorOnTheWay, DoctorReached, TreatmentStarted, VisitCompleted, TreatmentClosed, Cancelled, Invalid,
+    ConsultationStarted, ConsultationCompleted
 }
 
 enum class BookingFilter {

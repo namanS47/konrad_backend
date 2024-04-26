@@ -125,23 +125,7 @@ class BookingService(
             Sort.by(Sort.Direction.DESC, "createdAt")
         )
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
-        val filteredStatusList = mutableListOf<String>()
-
-        when (bookingFilter) {
-            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
-            BookingFilter.InProcess.name -> filteredStatusList.addAll(
-                listOf(
-                    StatusOfBooking.DoctorAssigned.name,
-                    StatusOfBooking.DoctorOnTheWay.name,
-                    StatusOfBooking.DoctorReached.name,
-                    StatusOfBooking.TreatmentStarted.name,
-                    StatusOfBooking.VisitCompleted.name,
-                )
-            )
-
-            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
-            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
-        }
+        val filteredStatusList = BookingDetailsConvertor.getBookingStatusList(bookingFilter)
 
         val totalCount =
             bookingRepository.countByAggregatorIdAndFilter(username, filteredStatusList)
@@ -171,23 +155,7 @@ class BookingService(
             bookingDetailsEntityList.add(bookingDetailsMatchedWithId.get())
         }
 
-        val filteredStatusList = mutableListOf<String>()
-
-        when (bookingFilter) {
-            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
-            BookingFilter.InProcess.name -> filteredStatusList.addAll(
-                listOf(
-                    StatusOfBooking.DoctorAssigned.name,
-                    StatusOfBooking.DoctorOnTheWay.name,
-                    StatusOfBooking.DoctorReached.name,
-                    StatusOfBooking.TreatmentStarted.name,
-                    StatusOfBooking.VisitCompleted.name,
-                )
-            )
-
-            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
-            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
-        }
+        val filteredStatusList = BookingDetailsConvertor.getBookingStatusList(bookingFilter)
 
         val username = jwtTokenUtil.getUsernameFromToken(providerToken)
 
@@ -236,23 +204,8 @@ class BookingService(
             Sort.by(Sort.Direction.DESC, "createdAt")
         )
         val username = jwtTokenUtil.getUsernameFromToken(userToken)
-        val filteredStatusList = mutableListOf<String>()
 
-        when (bookingFilter) {
-            BookingFilter.NewBooking.name -> filteredStatusList.add(StatusOfBooking.BookingConfirmed.name)
-            BookingFilter.InProcess.name -> filteredStatusList.addAll(
-                listOf(
-                    StatusOfBooking.DoctorAssigned.name,
-                    StatusOfBooking.DoctorOnTheWay.name,
-                    StatusOfBooking.DoctorReached.name,
-                    StatusOfBooking.TreatmentStarted.name,
-                    StatusOfBooking.VisitCompleted.name,
-                )
-            )
-
-            BookingFilter.Completed.name -> filteredStatusList.add(StatusOfBooking.TreatmentClosed.name)
-            BookingFilter.Cancelled.name -> filteredStatusList.add(StatusOfBooking.Cancelled.name)
-        }
+        val filteredStatusList = BookingDetailsConvertor.getBookingStatusList(bookingFilter)
 
         val bookingsList = if (filteredStatusList.isNotEmpty()) {
             bookingRepository.findAllByUserIdAndFilter(username, filteredStatusList, pageable)
