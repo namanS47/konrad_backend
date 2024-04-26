@@ -4,6 +4,7 @@ import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.model.*
 import com.example.konrad.repositories.PatientRepository
+import com.example.konrad.repositories.UserDetailsRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,9 +15,10 @@ import org.springframework.web.multipart.MultipartFile
 class UserService(
     @Autowired private val patientRepository: PatientRepository,
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
-    @Autowired private val awsService: AwsS3Service
+    @Autowired private val awsService: AwsS3Service,
+    @Autowired private val userDetailsRepository: UserDetailsRepository
 ) {
-    fun addPatient(patientDetailsModel: PatientDetailsModel, token: String): ResponseEntity<*> {
+    fun addPatient(patientDetailsModel: PatientDetailsModel, token: String, userId: String?): ResponseEntity<*> {
         if (!patientDetailsModel.id.isNullOrEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ResponseModel(
@@ -26,7 +28,7 @@ class UserService(
             )
         }
 
-        val username = jwtTokenUtil.getUsernameFromToken(token)
+        val username = userId ?: jwtTokenUtil.getUsernameFromToken(token)
         patientDetailsModel.userId = username
         val isPatientDetailsValid = PatientDetailsObject.isPatientValid(patientDetailsModel)
 

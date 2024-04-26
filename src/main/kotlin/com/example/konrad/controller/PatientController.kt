@@ -36,13 +36,13 @@ class PatientController(
         return addressService.getAllAddressByUserToken(userToken)
     }
 
-    @RolesAllowed("CUSTOMER")
     @PostMapping("")
     fun addPatient(
         @RequestHeader(name = "Authorization") userToken: String,
+        @RequestHeader userId: String?,
         @RequestBody patientDetailsModel: PatientDetailsModel
     ): ResponseEntity<*> {
-        return userService.addPatient(patientDetailsModel, userToken)
+        return userService.addPatient(patientDetailsModel, userToken, userId)
     }
 
     @RolesAllowed("CUSTOMER")
