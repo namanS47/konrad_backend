@@ -21,10 +21,9 @@ class BookingController(
 ) {
     @PostMapping("/new")
     fun addNewBooking(
-        @RequestHeader(name = "Authorization") userToken: String,
         @RequestBody bookingDetailsModel: BookingDetailsModel
     ): ResponseEntity<*> {
-        return bookingService.addNewBooking(bookingDetailsModel, userToken)
+        return bookingService.addNewBooking(bookingDetailsModel)
     }
 
     @RolesAllowed("SERVICE_PROVIDER")

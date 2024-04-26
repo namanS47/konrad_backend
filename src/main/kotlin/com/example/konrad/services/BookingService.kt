@@ -35,7 +35,7 @@ class BookingService(
     @Value("\${aggregator-user-name}")
     private lateinit var aggregatorUsername: String
 
-    fun addNewBooking(bookingDetailsModel: BookingDetailsModel, userToken: String): ResponseEntity<*> {
+    fun addNewBooking(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
         val newBookingValid = BookingDetailsConvertor.isNewBookingValid(bookingDetailsModel)
         val patientDetails = patientRepository.findById(bookingDetailsModel.patientId!!)
         if (!patientDetails.isPresent) {
