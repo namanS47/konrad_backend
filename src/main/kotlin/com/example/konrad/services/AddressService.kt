@@ -36,8 +36,8 @@ class AddressService(
         }
     }
 
-    fun getAllAddressByUserToken(token: String): ResponseEntity<*> {
-        val username = jwtTokenUtil.getUsernameFromToken(token)
+    fun getAllAddressByUserToken(token: String, userId: String?): ResponseEntity<*> {
+        val username = userId ?: jwtTokenUtil.getUsernameFromToken(token)
         val addressList = addressDetailsRepository.findAllByUserId(username).map {
             AddressDetailsConvertor.toModel(it)
         }

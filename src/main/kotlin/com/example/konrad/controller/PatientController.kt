@@ -33,8 +33,11 @@ class PatientController(
 
     @RolesAllowed("CUSTOMER")
     @GetMapping("/address")
-    fun getAddressByToken(@RequestHeader(name = "Authorization") userToken: String): ResponseEntity<*> {
-        return addressService.getAllAddressByUserToken(userToken)
+    fun getAddressByToken(
+        @RequestHeader(name = "Authorization") userToken: String,
+        @RequestHeader userId: String?,
+    ): ResponseEntity<*> {
+        return addressService.getAllAddressByUserToken(userToken, userId)
     }
 
     @PostMapping("")
