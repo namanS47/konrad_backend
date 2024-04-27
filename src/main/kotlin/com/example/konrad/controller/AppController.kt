@@ -24,7 +24,6 @@ class AppController(
     @Autowired private val driverService: DriverService,
     @Autowired private val bookingService: BookingService,
     @Autowired private val awsService: AwsS3Service,
-    @Autowired private val ratingService: RatingService,
     @Autowired private val notificationService: NotificationService,
     @Autowired private val stripePaymentService: StripePaymentService,
     @Autowired private val mapsService: MapsService,
@@ -154,22 +153,6 @@ class AppController(
         @RequestParam("pageSize") pageSize: Int?
     ): ResponseEntity<*> {
         return awsService.getFileDetails(userId, patientId, bookingId, title, fileType, page, pageSize)
-    }
-
-    @PostMapping("/rating")
-    fun addRating(@RequestBody ratingModel: UserRatingModel): ResponseEntity<*> {
-        return ratingService.addRating(ratingModel)
-    }
-
-    @GetMapping("/rating")
-    fun getRatings(
-        @RequestHeader("bookingId") bookingId: String?,
-        @RequestHeader("userId") userId: String?,
-        @RequestParam("page") page: Int = 1,
-        @RequestParam("pageSize") pageSize: Int?,
-        @RequestParam("modelList") modelList: List<String>?
-    ): ResponseEntity<*> {
-        return ratingService.getAllRatings(bookingId, userId, modelList, page, pageSize)
     }
 
     @PostMapping("/fcmToken")

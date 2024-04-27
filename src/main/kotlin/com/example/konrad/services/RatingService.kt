@@ -2,11 +2,9 @@ package com.example.konrad.services
 
 import com.example.konrad.constants.ApplicationConstants
 import com.example.konrad.entity.UserRatingEntity
-import com.example.konrad.model.PatientDetailsObject
-import com.example.konrad.model.ResponseModel
-import com.example.konrad.model.UserRatingModel
-import com.example.konrad.model.UserRatingObject
+import com.example.konrad.model.*
 import com.example.konrad.repositories.PatientRepository
+import com.example.konrad.repositories.TestimonialRepository
 import com.example.konrad.repositories.UserRatingRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service
 class RatingService(
     @Autowired private val userRatingRepository: UserRatingRepository,
     @Autowired private val patientRepository: PatientRepository,
+    @Autowired private val testimonialRepository: TestimonialRepository
 ) {
     fun addRating(userRatingModel: UserRatingModel): ResponseEntity<*> {
         if (userRatingModel.rating == null && userRatingModel.review == null) {
@@ -108,5 +107,62 @@ class RatingService(
             }
         }
         return userRatingModel
+    }
+
+    fun addTestimonials(testimonialModel: TestimonialModel): ResponseEntity<*> {
+        if (testimonialModel.rating == null && testimonialModel.review == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "rating and review both can't be empty", body = null))
+        }
+        testimonialRepository.save(TestimonialsConvertor.toEntity(testimonialModel, null))
+        return ResponseEntity.ok().body(ResponseModel(success = true, body = null))
+    }
+
+    fun updateTestimonials(testimonialModel: TestimonialModel): ResponseEntity<*> {
+        testimonialModel.id?.let {
+            val testimonialResponse = testimonialRepository.findById(it)
+
+            if (testimonialResponse.isPresent) {
+                testimonialRepository.save(TestimonialsConvertor.toEntity(testimonialModel, testimonialResponse.get()))
+                return ResponseEntity.ok().body(ResponseModel(success = true, body = null))
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ResponseModel(success = false, reason = "no testimonials exist with this id", body = null))
+            }
+        } ?: run {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "id can't be empty", body = null))
+        }
+    }
+
+    fun getTestimonials(
+        page: Int,
+        pageSize: Int?,
+        sortBy: String
+    ): ResponseEntity<*> {
+        val pageable: Pageable = PageRequest.of(
+            page - 1,
+            pageSize ?: ApplicationConstants.PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, sortBy)
+        )
+        val testimonialsList = testimonialRepository.findAll(pageable).get()
+        return ResponseEntity.ok().body(
+            ResponseModel(
+                success = true,
+                body = mapOf("testimonials" to testimonialsList.map { TestimonialsConvertor.toModel(it) })
+            )
+        )
+    }
+
+    fun deleteTestimonial(id: String): ResponseEntity<*> {
+        val testimonialResponse = testimonialRepository.findById(id)
+
+        return if (testimonialResponse.isPresent) {
+            testimonialRepository.deleteById(id)
+            ResponseEntity.ok().body(ResponseModel(success = true, body = null))
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ResponseModel(success = false, reason = "no testimonials exist with this id", body = null))
+        }
     }
 }
