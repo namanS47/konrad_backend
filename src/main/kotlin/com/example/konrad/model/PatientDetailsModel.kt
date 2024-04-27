@@ -6,21 +6,24 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class PatientDetailsModel(
-        var id: String? = null,
-        var userId: String? = null,
-        var name: String? = null,
-        var age: Int? = null,
-        var gender: String? = null,
-        var email: String? = null,
-        var profilePictureUrl: String? = null,
-        var mobileNumber: String? = null,
-        var countryCode: String? = null,
-        var relationShip: String? = null,
-        var language: String? = null,
+    var id: String? = null,
+    var userId: String? = null,
+    var name: String? = null,
+    var age: Int? = null,
+    var gender: String? = null,
+    var email: String? = null,
+    var profilePictureUrl: String? = null,
+    var mobileNumber: String? = null,
+    var countryCode: String? = null,
+    var relationShip: String? = null,
+    var language: String? = null,
 )
 
 object PatientDetailsObject {
-    fun toEntity(patientDetailsModel: PatientDetailsModel, patientDetailsEntity: PatientDetailsEntity?): PatientDetailsEntity {
+    fun toEntity(
+        patientDetailsModel: PatientDetailsModel,
+        patientDetailsEntity: PatientDetailsEntity?
+    ): PatientDetailsEntity {
         val entity = patientDetailsEntity ?: PatientDetailsEntity()
         entity.apply {
             patientDetailsModel.userId?.let {
@@ -72,21 +75,21 @@ object PatientDetailsObject {
     }
 
     fun isPatientValid(patientDetailsModel: PatientDetailsModel): ResponseModel<Boolean> {
-        if(patientDetailsModel.userId.isNullOrEmpty()) {
+        if (patientDetailsModel.userId.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "userid can not be empty")
         }
-        if(patientDetailsModel.name.isNullOrEmpty()) {
+        if (patientDetailsModel.name.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "name can not be empty")
         }
-        if(patientDetailsModel.age == null) {
+        if (patientDetailsModel.age == null) {
             return ResponseModel(success = false, reason = "age can not be empty")
         }
-        if(patientDetailsModel.gender.isNullOrEmpty()) {
+        if (patientDetailsModel.gender.isNullOrEmpty()) {
             return ResponseModel(success = false, reason = "gender can not be empty")
         }
-        if(patientDetailsModel.mobileNumber.isNullOrEmpty()) {
-            return ResponseModel(success = false, reason = "mobile number can not be empty")
-        }
+//        if(patientDetailsModel.mobileNumber.isNullOrEmpty()) {
+//            return ResponseModel(success = false, reason = "mobile number can not be empty")
+//        }
         if(!isRelationshipTypeValid(patientDetailsModel.relationShip)) {
             return ResponseModel(success = false, reason = "invalid relationship type")
         }
@@ -103,5 +106,5 @@ object PatientDetailsObject {
 }
 
 enum class PatientRelation {
-    Myself, Spouse, Parents, Relative ,Other
+    Myself, Spouse, Parents, Relative, Other
 }
