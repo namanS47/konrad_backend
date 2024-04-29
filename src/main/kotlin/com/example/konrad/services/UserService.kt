@@ -3,11 +3,14 @@ package com.example.konrad.services
 import com.example.konrad.aws.s3.AwsS3Service
 import com.example.konrad.config.jwt.JwtTokenUtil
 import com.example.konrad.model.*
+import com.example.konrad.model.jwt_models.UserDetailsConvertor
+import com.example.konrad.model.jwt_models.UserDetailsModel
 import com.example.konrad.repositories.PatientRepository
 import com.example.konrad.repositories.UserDetailsRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -16,7 +19,8 @@ class UserService(
     @Autowired private val patientRepository: PatientRepository,
     @Autowired private val jwtTokenUtil: JwtTokenUtil,
     @Autowired private val awsService: AwsS3Service,
-    @Autowired private val userDetailsRepository: UserDetailsRepository
+    @Autowired private val userDetailsRepository: UserDetailsRepository,
+    @Autowired private val passwordEncoder: PasswordEncoder,
 ) {
     fun addPatient(patientDetailsModel: PatientDetailsModel, token: String, userId: String?): ResponseEntity<*> {
         if (!patientDetailsModel.id.isNullOrEmpty()) {
@@ -64,7 +68,8 @@ class UserService(
     fun editPatient(patientDetailsModel: PatientDetailsModel, token: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(token)
         val roles = jwtTokenUtil.getRoleFromToken(token)
-        if (patientDetailsModel.id.isNullOrEmpty() || (username != patientDetailsModel.userId && roles != "ROLE_SERVICE_PROVIDER")) {
+        if (patientDetailsModel.id.isNullOrEmpty() ||
+            (username != patientDetailsModel.userId && roles != "ROLE_SERVICE_PROVIDER")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ResponseModel(
                     success = false,
@@ -149,5 +154,28 @@ class UserService(
             }
         }
         return ResponseEntity.ok().body(ResponseModel(success = false, reason = "Profile not added yet", body = null))
+    }
+
+    fun updatePassword(userDetailsModel: UserDetailsModel, token: String): ResponseEntity<*> {
+        val userDetailsResponse = userDetailsModel.username?.let { userDetailsRepository.findByUsernameOrUserId(it) }
+        val username = jwtTokenUtil.getUsernameFromToken(token)
+        val roles = jwtTokenUtil.getRoleFromToken(token)
+
+        if(username != userDetailsModel.username && roles != "ROLE_SERVICE_PROVIDER") {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                ResponseModel(
+                    success = false,
+                    reason = "invalid request", body = null
+                )
+            )
+        }
+
+        return if(userDetailsResponse?.isPresent == true) {
+            userDetailsModel.password = passwordEncoder.encode(userDetailsModel.password)
+            userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
+            ResponseEntity.ok(ResponseModel(success = true, body = null))
+        } else {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null))
+        }
     }
 }

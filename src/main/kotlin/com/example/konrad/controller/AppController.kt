@@ -27,7 +27,8 @@ class AppController(
     @Autowired private val notificationService: NotificationService,
     @Autowired private val stripePaymentService: StripePaymentService,
     @Autowired private val mapsService: MapsService,
-    @Autowired private val teleconsultationService: TeleconsultationService
+    @Autowired private val teleconsultationService: TeleconsultationService,
+    @Autowired private val userService: UserService,
 ) {
 //    @GetMapping("/")
 //    fun runDistanceMatrix() {
@@ -213,8 +214,18 @@ class AppController(
     }
 
     @GetMapping("/zoom/token")
-    fun getZoomSessionToken(@RequestHeader(name = "Authorization") token: String,
-                            @RequestHeader sessionName: String) : ResponseEntity<*> {
+    fun getZoomSessionToken(
+        @RequestHeader(name = "Authorization") token: String,
+        @RequestHeader sessionName: String
+    ): ResponseEntity<*> {
         return teleconsultationService.createZoomJwtToken(token, sessionName)
+    }
+
+    @RolesAllowed("SERVICE_PROVIDER")
+    fun updatePassword(
+        @RequestHeader(name = "Authorization") token: String,
+        @RequestBody userDetailsModel: UserDetailsModel
+    ): ResponseEntity<*> {
+        return userService.updatePassword(userDetailsModel, token)
     }
 }
