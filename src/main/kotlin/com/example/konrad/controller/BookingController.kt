@@ -61,8 +61,8 @@ class BookingController(
     }
 
     @GetMapping("/amount")
-    fun fetchBookingAmount(@RequestParam bookingType: BookingType): ResponseEntity<*> {
-        return bookingService.getBookingAmount(bookingType)
+    fun fetchBookingAmount(@RequestParam bookingTypeList: List<String>): ResponseEntity<*> {
+        return bookingService.getBookingAmount(bookingTypeList)
     }
 
     @PostMapping("/location")

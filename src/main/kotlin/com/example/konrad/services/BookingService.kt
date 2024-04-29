@@ -262,7 +262,7 @@ class BookingService(
     fun updateBookingDetails(bookingDetailsModel: BookingDetailsModel): ResponseEntity<*> {
         val bookingDetailsEntity = bookingRepository.findById(bookingDetailsModel.id!!)
         if (!bookingDetailsModel.doctorId.isNullOrEmpty()) {
-            if(bookingDetailsEntity.get().bookingType == BookingType.HomeBooking.name) {
+            if (bookingDetailsEntity.get().bookingType == BookingType.HomeBooking.name) {
                 notificationService.sendNotification(
                     NotificationDetailsModel(
                         userId = bookingDetailsEntity.get().userId,
@@ -288,7 +288,7 @@ class BookingService(
 //                } else {
 //                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(confirmBookingValidResponse)
 //                }
-            } else if(bookingDetailsEntity.get().bookingType == BookingType.Teleconsultation.name) {
+            } else if (bookingDetailsEntity.get().bookingType == BookingType.Teleconsultation.name) {
                 val latestBookingStatus = addBookingStatus(StatusOfBooking.DoctorAssigned)
                 bookingDetailsEntity.get().bookingStatusList?.add(latestBookingStatus)
             }
@@ -359,13 +359,26 @@ class BookingService(
         return ResponseEntity.ok(ResponseModel(success = true, body = null))
     }
 
-    fun getBookingAmount(bookingType: BookingType): ResponseEntity<*> {
-        val bookingAmount = when(bookingType) {
-            BookingType.HomeBooking -> ApplicationConstants.HOME_BOOKING_AMOUNT
-            BookingType.Teleconsultation -> ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT
+    fun getBookingAmount(bookingTypeList: List<String>): ResponseEntity<*> {
+        val bookingAmountList = bookingTypeList.map {
+            when (it) {
+                BookingType.HomeBooking.name -> {
+                    mapOf(
+                        "HOME_BOOKING_AMOUNT_GENERAL_PHYSICIAN" to ApplicationConstants.HOME_BOOKING_AMOUNT_GENERAL_PHYSICIAN,
+                        "HOME_BOOKING_AMOUNT_PEDIATRICIAN" to ApplicationConstants.HOME_BOOKING_AMOUNT_PEDIATRICIAN
+                    )
+                }
 
+                BookingType.Teleconsultation.name -> {
+                    mapOf(
+                        "TELECONSULTATION_BOOKING_AMOUNT_GENERAL_PHYSICIAN" to ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT_GENERAL_PHYSICIAN,
+                        "TELECONSULTATION_BOOKING_AMOUNT_PEDIATRICIAN" to ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT_PEDIATRICIAN
+                    )
+                }
+                else -> {}
+            }
         }
-        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("booking_amount" to bookingAmount)))
+        return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("booking_amount" to bookingAmountList)))
     }
 
 //    @CachePut(value = [ApplicationConstants.REDIS_LOCATION_CACHE_NAME], key = "#a0.id")
