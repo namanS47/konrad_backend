@@ -26,6 +26,14 @@ class JwtTokenUtil : Serializable {
         return getClaimFromToken(jwtToken) { obj: Claims -> obj.subject }
     }
 
+    fun getRoleFromToken(token: String?): String {
+        var jwtToken = token
+        if(jwtToken != null && jwtToken.startsWith("Bearer")) {
+            jwtToken = jwtToken.substring(7)
+        }
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(jwtToken).body["roles"] as String
+    }
+
     //retrieve expiration date from jwt token
     fun getExpirationDateFromToken(token: String?): Date {
         return getClaimFromToken(token) { obj: Claims -> obj.expiration }

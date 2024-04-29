@@ -63,7 +63,8 @@ class UserService(
 
     fun editPatient(patientDetailsModel: PatientDetailsModel, token: String): ResponseEntity<*> {
         val username = jwtTokenUtil.getUsernameFromToken(token)
-        if (patientDetailsModel.id.isNullOrEmpty() || username != patientDetailsModel.userId) {
+        val roles = jwtTokenUtil.getRoleFromToken(token)
+        if (patientDetailsModel.id.isNullOrEmpty() || (username != patientDetailsModel.userId && roles != "ROLE_SERVICE_PROVIDER")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
                 ResponseModel(
                     success = false,
