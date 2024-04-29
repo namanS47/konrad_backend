@@ -360,21 +360,23 @@ class BookingService(
     }
 
     fun getBookingAmount(bookingTypeList: List<String>): ResponseEntity<*> {
-        val bookingAmountList = bookingTypeList.map {
+        val bookingAmountList = mutableMapOf<String, Double>()
+        bookingTypeList.forEach {
             when (it) {
                 BookingType.HomeBooking.name -> {
-                    mapOf(
-                        "HOME_BOOKING_AMOUNT_GENERAL_PHYSICIAN" to ApplicationConstants.HOME_BOOKING_AMOUNT_GENERAL_PHYSICIAN,
-                        "HOME_BOOKING_AMOUNT_PEDIATRICIAN" to ApplicationConstants.HOME_BOOKING_AMOUNT_PEDIATRICIAN
-                    )
+                    bookingAmountList["HOME_BOOKING_AMOUNT_GENERAL_PHYSICIAN"] =
+                        ApplicationConstants.HOME_BOOKING_AMOUNT_GENERAL_PHYSICIAN
+                    bookingAmountList["HOME_BOOKING_AMOUNT_PEDIATRICIAN"] =
+                        ApplicationConstants.HOME_BOOKING_AMOUNT_PEDIATRICIAN
                 }
 
                 BookingType.Teleconsultation.name -> {
-                    mapOf(
-                        "TELECONSULTATION_BOOKING_AMOUNT_GENERAL_PHYSICIAN" to ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT_GENERAL_PHYSICIAN,
-                        "TELECONSULTATION_BOOKING_AMOUNT_PEDIATRICIAN" to ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT_PEDIATRICIAN
-                    )
+                    bookingAmountList["TELECONSULTATION_BOOKING_AMOUNT_GENERAL_PHYSICIAN"] =
+                        ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT_GENERAL_PHYSICIAN
+                    bookingAmountList["TELECONSULTATION_BOOKING_AMOUNT_PEDIATRICIAN"] =
+                        ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT_PEDIATRICIAN
                 }
+
                 else -> {}
             }
         }
