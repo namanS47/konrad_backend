@@ -45,11 +45,10 @@ class BookingService(
 
         return if (newBookingValid.success == true) {
             try {
-                //TODO: Add aggregator id here and send notification to aggregator
                 bookingDetailsModel.aggregatorId = aggregatorUsername
 
                 bookingDetailsModel.userId = patientDetails.get().userId
-                bookingDetailsModel.bookingAmount = ApplicationConstants.BOOKING_AMOUNT
+//                bookingDetailsModel.bookingAmount = ApplicationConstants.BOOKING_AMOUNT
 
                 //Add booking status
                 bookingDetailsModel.bookingStatusList =
