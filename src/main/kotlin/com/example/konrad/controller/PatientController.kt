@@ -16,7 +16,7 @@ class PatientController(
     @Autowired private val addressService: AddressService,
     @Autowired private val userService: UserService,
 ) {
-    @RolesAllowed("CUSTOMER")
+
     @PostMapping("/address")
     fun savePatientAddress(
         @RequestHeader(name = "Authorization") userToken: String,
@@ -31,7 +31,7 @@ class PatientController(
         return addressService.getAddressByAddressId(addressId)
     }
 
-    @RolesAllowed("CUSTOMER")
+
     @GetMapping("/address")
     fun getAddressByToken(
         @RequestHeader(name = "Authorization") userToken: String,
@@ -49,7 +49,7 @@ class PatientController(
         return userService.addPatient(patientDetailsModel, userToken, userId)
     }
 
-    @RolesAllowed("CUSTOMER")
+
     @PutMapping("")
     fun editPatient(
         @RequestHeader(name = "Authorization") userToken: String,
