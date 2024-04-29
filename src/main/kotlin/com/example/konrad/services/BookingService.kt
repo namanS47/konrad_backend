@@ -359,8 +359,12 @@ class BookingService(
         return ResponseEntity.ok(ResponseModel(success = true, body = null))
     }
 
-    fun getBookingAmount(): ResponseEntity<*> {
-        val bookingAmount = ApplicationConstants.BOOKING_AMOUNT
+    fun getBookingAmount(bookingType: BookingType): ResponseEntity<*> {
+        val bookingAmount = when(bookingType) {
+            BookingType.HomeBooking -> ApplicationConstants.HOME_BOOKING_AMOUNT
+            BookingType.Teleconsultation -> ApplicationConstants.TELECONSULTATION_BOOKING_AMOUNT
+
+        }
         return ResponseEntity.ok(ResponseModel(success = true, body = mapOf("booking_amount" to bookingAmount)))
     }
 

@@ -2,6 +2,7 @@ package com.example.konrad.controller
 
 import com.example.konrad.model.BookingDetailsModel
 import com.example.konrad.model.BookingLocationModel
+import com.example.konrad.model.BookingType
 import com.example.konrad.services.BookingService
 import jakarta.annotation.security.RolesAllowed
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,8 +61,8 @@ class BookingController(
     }
 
     @GetMapping("/amount")
-    fun fetchBookingAmount(): ResponseEntity<*> {
-        return bookingService.getBookingAmount()
+    fun fetchBookingAmount(@RequestParam bookingType: BookingType): ResponseEntity<*> {
+        return bookingService.getBookingAmount(bookingType)
     }
 
     @PostMapping("/location")
