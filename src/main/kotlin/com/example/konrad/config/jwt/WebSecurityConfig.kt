@@ -48,6 +48,7 @@ class WebSecurityConfig() {
                 "/stripe/webhook",
                 "/place/autocomplete",
                 "/place/details",
+                "/booking/amount",
                 "/").permitAll()
                     .anyRequest().authenticated()
         }.exceptionHandling{exception ->  exception.authenticationEntryPoint(jwtAuthenticationEntryPoint)}
