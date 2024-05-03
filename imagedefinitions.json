@@ -1,0 +1,6 @@
+[
+  {
+    "name": "drect-staging",
+    "imageUri": "510487323360.dkr.ecr.me-central-1.amazonaws.com/drect-staging:latest"
+  }
+]

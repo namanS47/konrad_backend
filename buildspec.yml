@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands: 
+      - echo Logging in to Amazon ECR
+      - aws ecr get-login-password --region me-central-1 | docker login --username AWS --password-stdin 510487323360.dkr.ecr.me-central-1.amazonaws.com
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the docker image...
+      - docker build -t drect-staging .
+      - docker tag drect-staging:latest 510487323360.dkr.ecr.me-central-1.amazonaws.com/drect-staging:latest
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 510487323360.dkr.ecr.me-central-1.amazonaws.com/drect-staging:latest
+
+artifacts:
+  files:
+    - '**/*'
+  name: drect-staging$(date +%Y-%m-%d)
