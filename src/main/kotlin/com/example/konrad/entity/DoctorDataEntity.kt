@@ -20,6 +20,10 @@ class DoctorDataEntity(
         var email: String? = null,
         var expertise: String? = null,
         var experience: String? = null,
+        @Field("year_experience")
+        var yearExperience: Double? = null,
+        @Field("patient_treated")
+        var patientTreated: Int? = null,
         var info: String? = null,
         var location: LatLong? = null,
         @Field("profile_picture_url")

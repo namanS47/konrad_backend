@@ -21,6 +21,8 @@ data class DoctorDataModel(
     var email: String? = null,
     var expertise: String? = null,
     var experience: String? = null,
+    var yearExperience: Double? = null,
+    var patientTreated: Int? = null,
     var info: String? = null,
     var location: LatLong? = null,
     var profilePictureUrl: String? = null,
@@ -46,6 +48,8 @@ object DoctorDataObject {
             email = doctorDataModel.email
             expertise = doctorDataModel.expertise
             experience = doctorDataModel.experience
+            yearExperience = doctorDataModel.yearExperience
+            patientTreated = doctorDataModel.patientTreated
             info = doctorDataModel.info
             location = doctorDataModel.location
             profilePictureUrl = doctorDataModel.profilePictureUrl
@@ -71,6 +75,8 @@ object DoctorDataObject {
             email = doctorDataEntity.email
             expertise = doctorDataEntity.expertise
             experience = doctorDataEntity.experience
+            yearExperience = doctorDataEntity.yearExperience
+            patientTreated = doctorDataEntity.patientTreated
             info = doctorDataEntity.info
             location = doctorDataEntity.location
             profilePictureUrl = doctorDataEntity.profilePictureUrl
@@ -109,6 +115,12 @@ object DoctorDataObject {
             }
             doctorDataModel.experience?.let {
                 experience = it
+            }
+            doctorDataModel.yearExperience?.let {
+                yearExperience = it
+            }
+            doctorDataModel.patientTreated?.let {
+                patientTreated = it
             }
             doctorDataModel.info?.let {
                 info = it
