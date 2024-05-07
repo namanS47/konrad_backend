@@ -171,8 +171,10 @@ class UserService(
         }
 
         return if(userDetailsResponse?.isPresent == true) {
-            userDetailsModel.password = passwordEncoder.encode(userDetailsModel.password)
-            userDetailsRepository.save(UserDetailsConvertor.toEntity(userDetailsModel))
+            val userDetails = userDetailsResponse.get()
+
+            userDetails.password = passwordEncoder.encode(userDetailsModel.password)
+            userDetailsRepository.save(userDetails)
             ResponseEntity.ok(ResponseModel(success = true, body = null))
         } else {
             ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseModel(success = false, body = null))

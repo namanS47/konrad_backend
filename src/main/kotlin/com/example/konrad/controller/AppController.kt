@@ -222,6 +222,7 @@ class AppController(
     }
 
     @RolesAllowed("SERVICE_PROVIDER")
+    @PostMapping("/password/update")
     fun updatePassword(
         @RequestHeader(name = "Authorization") token: String,
         @RequestBody userDetailsModel: UserDetailsModel
